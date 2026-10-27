@@ -89,23 +89,6 @@ for i in range(bp_years):
     bfr,
     fcff
 ])
-st.write("DEBUG")
-st.write(locals().keys())
-bp_df = pd.DataFrame(
-    bp,
-    columns=[
-        "Année",
-        "CA",
-        "EBITDA",
-        "Amortissements",
-        "EBIT",
-        "NOPAT",
-        "CAPEX",
-        "Variation BFR",
-        "FCFF"
-    ]
-)
-
 st.write(bp_df.head())
 st.dataframe(bp_df, use_container_width=True)
 
