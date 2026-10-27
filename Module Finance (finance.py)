@@ -1,0 +1,26 @@
+def cost_of_equity(
+        risk_free,
+        beta,
+        market_premium
+):
+
+    return risk_free + beta * market_premium
+def after_tax_debt_cost(
+        debt_rate,
+        tax_rate
+):
+
+    return debt_rate * (1-tax_rate)
+def wacc(
+        equity,
+        debt,
+        ke,
+        kd
+):
+
+    total = equity + debt
+
+    return (
+        equity / total * ke
+        + debt / total * kd
+    )
