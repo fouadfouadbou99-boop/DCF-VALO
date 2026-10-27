@@ -1,0 +1,15 @@
+def committee_summary(results):
+
+    return f"""
+    Enterprise Value : {results['EV']:,.0f} MAD
+
+    WACC retenu : {results['WACC']:.2%}
+
+    Croissance terminale : {results['g']:.2%}
+
+    La valeur est principalement portée par
+    les flux explicites et la valeur terminale.
+
+    Les analyses de sensibilité montrent
+    une plage de valorisation robuste.
+    """
