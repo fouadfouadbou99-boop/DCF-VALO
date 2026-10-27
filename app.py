@@ -38,7 +38,13 @@ with st.sidebar:
         "Méthode d'actualisation",
         ["Année pleine", "Mid-Year", "Durée résiduelle"]
     )
-
+fcff_method = st.selectbox(
+    "Méthode FCFF",
+    [
+        "Excel",
+        "DCF Standard"
+    ]
+)
 cost_equity = rf + beta * mrp + sp
 wacc = ((1 - debt_weight) * cost_equity) + (debt_weight * cost_debt * (1-tax_rate))
 first_bp_year = st.number_input(
