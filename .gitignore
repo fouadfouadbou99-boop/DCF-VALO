@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Reports
+exports/
+reports/
+output/
+
+# Excel files
+*.xlsx
+*.xls
+
+# PDF files
+*.pdf
+
+# Database
+*.sqlite
+*.db
+
+# Env
+.env
+
+# Temporary
+tmp/
+temp/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Pytest
+.pytest_cache/
+
+# Cache
+.cache/
+
+# Images generated
+*.png
+*.jpg
+*.jpeg
+
+# Backup
+*.bak
+*.old
