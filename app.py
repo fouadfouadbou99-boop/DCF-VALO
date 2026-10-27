@@ -89,7 +89,8 @@ for i in range(bp_years):
     bfr,
     fcff
 ])
-
+st.write("DEBUG")
+st.write(locals().keys())
 st.dataframe(bp_df, use_container_width=True)
 
 # =====================
