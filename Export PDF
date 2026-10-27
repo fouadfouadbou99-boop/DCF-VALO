@@ -1,0 +1,27 @@
+from reportlab.platypus import *
+
+def export_pdf(text):
+
+    doc = SimpleDocTemplate(
+        "valuation_report.pdf"
+    )
+
+    styles=getSampleStyleSheet()
+
+    story=[]
+
+    story.append(
+        Paragraph(
+            "Corporate Valuation Report",
+            styles["Title"]
+        )
+    )
+
+    story.append(
+        Paragraph(
+            text,
+            styles["BodyText"]
+        )
+    )
+
+    doc.build(story)
