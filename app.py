@@ -75,14 +75,41 @@ revenue = revenue0
 bp=[]
 
 for i in range(bp_years):
+
     revenue *= (1 + rows[i]['Growth'])
+
     ebitda = revenue * rows[i]['EBITDA']
+
     dep = revenue * rows[i]['D&A']
-    ebit = ebitda - dep
-    nopat = ebit * (1-tax_rate)
+
     capex = revenue * rows[i]['CAPEX']
+
     bfr = revenue * rows[i]['BFR']
-    fcff = nopat + dep - capex - bfr
+
+    ebit = ebitda - dep
+
+    nopat = ebit * (1 - tax_rate)
+
+    tax = ebitda * tax_rate
+
+    if fcff_method == "Excel":
+
+        fcff = (
+            ebitda
+            - tax
+            - capex
+            - bfr
+        )
+
+    else:
+
+        fcff = (
+            nopat
+            + dep
+            - capex
+            - bfr
+        )
+
 
     bp.append([
     first_bp_year + i,
