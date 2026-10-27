@@ -1,0 +1,43 @@
+def discount_factor(
+        wacc,
+        period
+):
+
+    return 1 / ((1+wacc)**(period-0.5))
+def terminal_value(
+        last_fcff,
+        g,
+        wacc
+):
+
+    return (
+        last_fcff*(1+g)
+        /(wacc-g)
+    )
+import numpy as np
+
+def dcf_valuation(
+        fcffs,
+        wacc,
+        g
+):
+
+    pv=0
+
+    for i,fcff in enumerate(fcffs):
+
+        pv += fcff/((1+wacc)**(i+0.5))
+
+    tv=terminal_value(
+        fcffs[-1],
+        g,
+        wacc
+    )
+
+    pv_tv=tv/((1+wacc)**(len(fcffs)-0.5))
+
+    return {
+        "PV_FCFF": pv,
+        "PV_Terminal": pv_tv,
+        "EV": pv + pv_tv
+    }
