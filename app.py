@@ -41,7 +41,11 @@ with st.sidebar:
 
 cost_equity = rf + beta * mrp + sp
 wacc = ((1 - debt_weight) * cost_equity) + (debt_weight * cost_debt * (1-tax_rate))
-
+first_bp_year = st.number_input(
+    "Première année du BP",
+    value=2026,
+    step=1
+)
 # =====================
 # BUSINESS PLAN
 # =====================
@@ -75,13 +79,15 @@ for i in range(bp_years):
     fcff = nopat + dep - capex - bfr
 
     bp.append([
-        calendar_year+i+1,revenue,ebitda,dep,
-        ebit,nopat,capex,bfr,fcff
-    ])
-
-bp_df = pd.DataFrame(bp, columns=[
-    'Année','CA','EBITDA','Amortissements','EBIT',
-    'NOPAT','CAPEX','Variation BFR','FCFF'
+    first_bp_year + i,
+    revenue,
+    ebitda,
+    dep,
+    ebit,
+    nopat,
+    capex,
+    bfr,
+    fcff
 ])
 
 st.dataframe(bp_df, use_container_width=True)
