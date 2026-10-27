@@ -1,0 +1,19 @@
+st.metric(
+    "Enterprise Value",
+    f"{EV:,.0f} MAD"
+)
+
+st.metric(
+    "Equity Value",
+    f"{EQ:,.0f} MAD"
+)
+
+st.metric(
+    "Valeur / Action",
+    f"{ps:.2f} MAD"
+)
+
+st.metric(
+    "WACC",
+    f"{wacc:.2%}"
+)
