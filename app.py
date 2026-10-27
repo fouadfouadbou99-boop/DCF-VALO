@@ -46,6 +46,36 @@ first_bp_year = st.number_input(
     value=2026,
     step=1
 )
+fcff_method = st.selectbox(
+    "Méthode de calcul du FCFF",
+    [
+        "EBITDA - Impôts - Invest - BFR",
+        "NOPAT + D&A - CAPEX - BFR"
+    ]
+)
+if fcff_method == "EBITDA - Impôts - Invest - BFR":
+
+    tax = ebitda * tax_rate
+
+    fcff = (
+        ebitda
+        - tax
+        - capex
+        - bfr
+    )
+
+else:
+
+    ebit = ebitda - dep
+
+    nopat = ebit * (1-tax_rate)
+
+    fcff = (
+        nopat
+        + dep
+        - capex
+        - bfr
+    )
 # =====================
 # BUSINESS PLAN
 # =====================
