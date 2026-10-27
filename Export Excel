@@ -1,0 +1,15 @@
+with pd.ExcelWriter(
+    "corporate_valuation.xlsx",
+    engine="openpyxl"
+) as writer:
+
+    bp_df.to_excel(
+        writer,
+        sheet_name="BusinessPlan",
+        index=False
+    )
+
+    sensitivity_df.to_excel(
+        writer,
+        sheet_name="Sensitivity"
+    )
