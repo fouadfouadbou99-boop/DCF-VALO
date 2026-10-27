@@ -1,0 +1,13 @@
+def compute_fcff(
+        nopat,
+        depreciation,
+        capex,
+        delta_nwc
+):
+
+    return (
+        nopat
+        + depreciation
+        - capex
+        - delta_nwc
+    )
