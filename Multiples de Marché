@@ -1,0 +1,6 @@
+def valuation_by_multiple(
+        metric,
+        multiple
+):
+
+    return metric * multiple
