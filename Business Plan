@@ -1,0 +1,47 @@
+import pandas as pd
+
+def project_income_statement(
+        revenue,
+        growth,
+        ebitda_margin,
+        depreciation_rate,
+        tax_rate,
+        years=5
+):
+
+    data=[]
+
+    sales=revenue
+
+    for y in range(years):
+
+        sales*=1+growth
+
+        ebitda=sales*ebitda_margin
+
+        dep=sales*depreciation_rate
+
+        ebit=ebitda-dep
+
+        tax=max(0,ebit)*tax_rate
+
+        nopat=ebit-tax
+
+        data.append([
+            y+1,
+            sales,
+            ebitda,
+            ebit,
+            nopat
+        ])
+
+    return pd.DataFrame(
+        data,
+        columns=[
+            "Year",
+            "Revenue",
+            "EBITDA",
+            "EBIT",
+            "NOPAT"
+        ]
+    )
