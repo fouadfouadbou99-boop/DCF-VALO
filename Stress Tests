@@ -1,0 +1,26 @@
+def run_stress_tests(
+        revenue,
+        ebitda_margin
+):
+
+    scenarios = {
+
+        "Optimiste": (1.2,1.1),
+
+        "Base": (1,1),
+
+        "Dégradé": (0.9,0.85),
+
+        "Crise": (0.75,0.70)
+    }
+
+    results={}
+
+    for s,(r,m) in scenarios.items():
+
+        results[s]={
+            "Revenue": revenue*r,
+            "Margin": ebitda_margin*m
+        }
+
+    return results
