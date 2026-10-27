@@ -175,6 +175,31 @@ col1.metric('Enterprise Value', f'{enterprise_value:,.0f}')
 col2.metric('Equity Value', f'{equity_value:,.0f}')
 col3.metric('Prix Action', f'{share_price:,.2f}')
 col4.metric('WACC', f'{wacc*100:.2f}%')
+summary_df = pd.DataFrame({
+    "Indicateur": [
+        "Somme FCFA",
+        "Valeur Terminale",
+        "VT Actualisée",
+        "Valeur d'Entreprise",
+        "Dette Nette",
+        "Valeur des Fonds Propres",
+        "Valeur par Action"
+    ],
+    "Valeur": [
+        pv_fcff_sum,
+        tv,
+        pv_tv,
+        enterprise_value,
+        net_debt,
+        equity_value,
+        share_price
+    ]
+})
+
+st.dataframe(
+    summary_df,
+    use_container_width=True
+)
 
 st.subheader('DCF')
 
