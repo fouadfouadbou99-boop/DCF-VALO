@@ -1,0 +1,40 @@
+import pandas as pd
+
+def sensitivity_table(
+        fcffs,
+        wacc_range,
+        growth_range
+):
+
+    output = pd.DataFrame()
+
+    for g in growth_range:
+
+        values=[]
+
+        for w in wacc_range:
+
+            ev = dcf_valuation(
+                fcffs,
+                w,
+                g
+            )["EV"]
+
+            values.append(ev)
+
+        output[g]=values
+
+    output.index=wacc_range
+
+    return output
+import plotly.express as px
+
+def sensitivity_heatmap(df):
+
+    fig = px.imshow(
+        df,
+        text_auto=True,
+        color_continuous_scale="RdYlGn"
+    )
+
+    return fig
