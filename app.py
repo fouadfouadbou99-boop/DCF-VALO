@@ -420,14 +420,103 @@ for w in wacc_range:
 
     row_values = []
 
-    for g in g_range:
+    for margin in ebitda_range:
 
-        w_test = w / 100
-        g_test = g / 100
+        revenue_test = revenue0
 
-        if w_test <= g_test:
+        fcffs_test = []
 
-            row_values.append(None)
+        for i in range(bp_years):
+
+            revenue_test *= (
+                1 + rows[i]["Growth"]
+            )
+
+            ebitda_test = (
+                revenue_test
+                * (margin / 100)
+            )
+
+            tax_test = (
+                ebitda_test
+                * tax_rate
+            )
+
+            capex_test = (
+                revenue_test
+                * rows[i]["CAPEX"]
+            )
+
+            bfr_test = (
+                revenue_test
+                * rows[i]["BFR"]
+            )
+
+            fcff_test = (
+                ebitda_test
+                - tax_test
+                - capex_test
+                - bfr_test
+            )
+
+            fcffs_test.append(
+                fcff_test
+            )
+
+        discounts_test = (
+            1
+            / (
+                (1 + w/100)
+                ** periods
+            )
+        )
+
+        pv_fcff_test = (
+            np.array(fcffs_test)
+            * discounts_test
+        ).sum()
+
+        terminal_fcff_test = (
+            fcffs_test[-1]
+            * (1 + terminal_growth)
+        )
+
+        tv_test = (
+            terminal_fcff_test
+            /
+            (
+                (w/100)
+                - terminal_growth
+            )
+        )
+
+        pv_tv_test = (
+            tv_test
+            * discounts_test[-1]
+        )
+
+        ev_test = (
+            pv_fcff_test
+            + pv_tv_test
+        )
+
+        eq_test = (
+            ev_test
+            - net_debt
+        )
+
+        px_value = (
+            eq_test
+            / shares
+        )
+
+        row_values.append(
+            round(px_value, 0)
+        )
+
+    heatmap_ebitda.append(
+        row_values
+    )
 
         else:
 
