@@ -5,6 +5,7 @@ import plotly.express as px
 from datetime import date
 from io import BytesIO
 import json
+import plotly.graph_objects as go
 st.set_page_config(page_title="Corporate Valuation Platform", layout="wide")
 
 st.title("Corporate Valuation Platform")
@@ -392,10 +393,16 @@ heatmap_df = pd.DataFrame(
     index=["-1%","0%","+1%","+2%"]
 )
 
-fig_heatmap = px.imshow(
-    heatmap_df,
-    text_auto=".0f",
-    color_continuous_scale="RdYlGn"
+fig_heatmap = go.Figure(
+    data=go.Heatmap(
+        z=heatmap_values,
+        x=["-10%", "-5%", "0%", "+5%", "+10%"],
+        y=["-1%", "0%", "+1%", "+2%"],
+        colorscale="RdYlGn",
+        text=heatmap_values,
+        texttemplate="%{text}",
+        showscale=True
+    )
 )
 
 fig_heatmap.update_layout(
