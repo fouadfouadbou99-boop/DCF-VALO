@@ -570,7 +570,7 @@ st.plotly_chart(
     fig2,
     use_container_width=True
 )
-    heatmap_values.append(row_values)
+heatmap_values.append(row_values)
     import pandas as pd
 
 heatmap_df = pd.DataFrame(
