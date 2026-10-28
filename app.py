@@ -215,8 +215,7 @@ st.dataframe(dcf_df, use_container_width=True)
 # SAUVEGARDE JSON
 # =====================
 
-save_data = {}
-
+save_data = {
     "company": company,
     "valuation_date": str(valuation_date),
     "closing_month": closing_month,
@@ -235,6 +234,7 @@ save_data = {}
     "discount_mode": discount_mode,
     "fcff_method": fcff_method,
     "rows": rows
+}
 st.download_button('Télécharger Excel', buf.getvalue(), 'Corporate_Valuation.xlsx')
     json_string = json.dumps(
     save_data,
