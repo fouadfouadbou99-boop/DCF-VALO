@@ -61,7 +61,7 @@ def run_scenarios(
 
     heatmap_ebitda = []
 
-for w in wacc_range:
+    for w in wacc_range:
 
     row_values = []
 
