@@ -4,7 +4,7 @@ import numpy as np
 import plotly.express as px
 from datetime import date
 from io import BytesIO
-
+import json
 st.set_page_config(page_title="Corporate Valuation Platform", layout="wide")
 
 st.title("Corporate Valuation Platform")
@@ -211,7 +211,30 @@ dcf_df = pd.DataFrame({
 })
 
 st.dataframe(dcf_df, use_container_width=True)
+# =====================
+# SAUVEGARDE JSON
+# =====================
 
+save_data = {
+    "company": company,
+    "valuation_date": str(valuation_date),
+    "closing_month": closing_month,
+    "bp_years": bp_years,
+    "first_bp_year": first_bp_year,
+    "rf": rf,
+    "beta": beta,
+    "mrp": mrp,
+    "sp": sp,
+    "cost_debt": cost_debt,
+    "tax_rate": tax_rate,
+    "debt_weight": debt_weight,
+    "terminal_growth": terminal_growth,
+    "net_debt": net_debt,
+    "shares": shares,
+    "discount_mode": discount_mode,
+    "fcff_method": fcff_method,
+    "rows": rows
+}
 fig = px.line(bp_df, x='Année', y=['CA','EBITDA','FCFF'])
 st.plotly_chart(fig, use_container_width=True)
 
@@ -244,3 +267,4 @@ with pd.ExcelWriter(buf, engine='openpyxl') as writer:
 
 buf.seek(0)
 st.download_button('Télécharger Excel', buf.getvalue(), 'Corporate_Valuation.xlsx')
+
