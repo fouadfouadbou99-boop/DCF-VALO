@@ -165,7 +165,6 @@ et d'apprécier la sensibilité du DCF aux hypothèses de long terme.
     ]
 
     heatmap_ebitda = []
-
     for w in wacc_range:
 
     row_values = []
@@ -188,6 +187,8 @@ et d'apprécier la sensibilité du DCF aux hypothèses de long terme.
     heatmap_ebitda.append(
         row_values
     )
+
+    
 
     fig_ebitda = go.Figure(
         data=go.Heatmap(
