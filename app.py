@@ -236,7 +236,7 @@ save_data = {
     "rows": rows
 }
 st.download_button('Télécharger Excel', buf.getvalue(), 'Corporate_Valuation.xlsx')
-    json_string = json.dumps(
+json_string = json.dumps(
     save_data,
     indent=4,
     ensure_ascii=False
@@ -248,4 +248,5 @@ st.download_button(
     file_name=f"{company}.json",
     mime="application/json"
 )
+
 
