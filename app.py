@@ -420,8 +420,7 @@ for w in wacc_range:
 
     row_values = []
 
-   
-        revenue_test = revenue0
+   revenue_test = revenue0
 
         fcffs_test = []
 
