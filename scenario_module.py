@@ -4,6 +4,7 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 def run_scenarios(
+    def run_scenarios(
     revenue0,
     rows,
     bp_years,
@@ -15,6 +16,7 @@ def run_scenarios(
     shares,
     pv_fcff_sum,
     fcff_terminal,
+    share_price
 ):
 
     st.divider()
