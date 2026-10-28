@@ -575,16 +575,7 @@ for w in wacc_range:
                 1 + rows[i]["Growth"]
             )
 
-            ebitda_test = (
-                revenue_test
-                * (margin / 100)
-            )
-
-            tax_test = (
-                ebitda_test
-                * tax_rate
-            )
-
+            
             capex_test = (
                 revenue_test
                 * rows[i]["CAPEX"]
