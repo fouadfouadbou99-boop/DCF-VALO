@@ -518,7 +518,7 @@ for w in wacc_range:
         row_values
     )
 
-        else:
+ else:
 
             tv_test = (
                 fcff_terminal
