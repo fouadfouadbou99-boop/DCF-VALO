@@ -1,4 +1,4 @@
-# scenario_module.py
+a# scenario_module.py
 
 import streamlit as st
 import numpy as np
@@ -58,26 +58,67 @@ def run_scenarios(
     ]
 
     heatmap_g = []
+for w in wacc_range:
 
+    row_values = []
+
+    for g in g_range:
+
+        w_test = w / 100
+        g_test = g / 100
+
+        if w_test <= g_test:
+
+            row_values.append(None)
+
+        else:
+
+            tv_test = (
+                fcff_terminal
+                / (w_test - g_test)
+            )
+
+            pv_tv_test = (
+                tv_test
+                * (1 / ((1 + w_test) ** periods[-1]))
+            )
+
+            ev_test = (
+                pv_fcff_sum
+                + pv_tv_test
+            )
+
+            eq_test = (
+                ev_test
+                - net_debt
+            )
+
+            price_test = (
+                eq_test
+                / shares
+            )
+
+            row_values.append(
+                round(price_test, 0)
+            )
+
+    heatmap_g.append(row_values)  
     heatmap_ebitda = []
 
-    for w in wacc_range:
+for w in wacc_range:
 
     row_values = []
 
     for margin in ebitda_range:
 
-        # Impact EBITDA
         ebitda_factor = (
             margin / base_margin
         )
 
-        # Impact WACC
         wacc_factor = (
             wacc / (w / 100)
         )
 
-        # Valeur ajustée
         price_test = (
             share_price
             * ebitda_factor
@@ -88,12 +129,9 @@ def run_scenarios(
             round(price_test, 0)
         )
 
-        heatmap_ebitda.append(
+    heatmap_ebitda.append(
         row_values
     )
-
-
-   
 
     fig_g = go.Figure(
         data=go.Heatmap(
