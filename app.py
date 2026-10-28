@@ -242,7 +242,39 @@ with pd.ExcelWriter(
 
 buf.seek(0)
 
-st.dataframe(dcf_df, use_container_width=True)
+buf = BytesIO()
+
+with pd.ExcelWriter(
+    buf,
+    engine="openpyxl"
+) as writer:
+
+    bp_df.to_excel(
+        writer,
+        sheet_name="BusinessPlan",
+        index=False
+    )
+
+    dcf_df.to_excel(
+        writer,
+        sheet_name="DCF",
+        index=False
+    )
+
+    sens.to_excel(
+        writer,
+        sheet_name="Sensibilite",
+        index=False
+    )
+
+    stress.to_excel(
+        writer,
+        sheet_name="Stress",
+        index=False
+    )
+
+buf.seek(0)
+
 # =====================
 # SAUVEGARDE JSON
 # =====================
