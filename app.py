@@ -383,11 +383,119 @@ for wacc_delta in wacc_shocks:
                     2
                 )
             )
-st.subheader("📊 Heatmap WACC vs EBITDA")
+st.subheader("📈 Sensibilité DCF : WACC vs Croissance Terminale")
 
-ebitda_range = [20,22,24,26,28,30]
+base_g = terminal_growth * 100
+base_wacc = wacc * 100
 
-wacc_range = [8,9,10,11,12,13]
+g_range = [
+    round(base_g - 1.00, 2),
+    round(base_g - 0.75, 2),
+    round(base_g - 0.50, 2),
+    round(base_g - 0.25, 2),
+    round(base_g, 2),
+    round(base_g + 0.25, 2),
+    round(base_g + 0.50, 2),
+    round(base_g + 0.75, 2),
+    round(base_g + 1.00, 2)
+]
+
+wacc_range = [
+    round(base_wacc - 2.00, 2),
+    round(base_wacc - 1.50, 2),
+    round(base_wacc - 1.00, 2),
+    round(base_wacc - 0.50, 2),
+    round(base_wacc, 2),
+    round(base_wacc + 0.50, 2),
+    round(base_wacc + 1.00, 2),
+    round(base_wacc + 1.50, 2),
+    round(base_wacc + 2.00, 2)
+]
+
+heatmap_g = []
+
+for w in wacc_range:
+
+    row_values = []
+
+    for g in g_range:
+
+        w_test = w / 100
+        g_test = g / 100
+
+        if w_test <= g_test:
+
+            row_values.append(None)
+
+        else:
+
+            tv_test = (
+                fcff_terminal
+                /
+                (w_test - g_test)
+            )
+
+            pv_tv_test = (
+                tv_test
+                * discounts[-1]
+            )
+
+            ev_test = (
+                pv_fcff_sum
+                + pv_tv_test
+            )
+
+            eq_test = (
+                ev_test
+                - net_debt
+            )
+
+            price_test = (
+                eq_test
+                / shares
+            )
+
+            row_values.append(
+                round(price_test, 0)
+            )
+
+    heatmap_g.append(row_values)
+
+fig_g = go.Figure(
+    data=go.Heatmap(
+        z=heatmap_g,
+        x=[f"{x:.2f}%" for x in g_range],
+        y=[f"{x:.2f}%" for x in wacc_range],
+        colorscale="RdYlGn",
+        reversescale=True,
+        text=heatmap_g,
+        texttemplate="%{text}"
+    )
+)
+
+fig_g.update_layout(
+    title="Valeur par Action : WACC vs Croissance Terminale",
+    xaxis_title="Croissance Terminale",
+    yaxis_title="WACC"
+)
+
+st.plotly_chart(
+    fig_g,
+    use_container_width=True
+)
+st.subheader("📊 Sensibilité DCF : WACC vs Marge EBITDA")
+
+base_ebitda = rows[-1]["EBITDA"] * 100
+
+ebitda_range = [
+    round(base_ebitda - 3, 2),
+    round(base_ebitda - 2, 2),
+    round(base_ebitda - 1, 2),
+    round(base_ebitda, 2),
+    round(base_ebitda + 1, 2),
+    round(base_ebitda + 2, 2),
+    round(base_ebitda + 3, 2)
+]
 
 heatmap_ebitda = []
 
@@ -395,35 +503,50 @@ for w in wacc_range:
 
     row_values = []
 
-    for m in ebitda_range:
+    for margin in ebitda_range:
 
-        revenue = revenue0
+        revenue_test = revenue0
 
         fcffs_test = []
 
         for i in range(bp_years):
 
-            revenue *= (1 + rows[i]['Growth'])
-
-            ebitda = revenue * (m/100)
-
-            tax = ebitda * tax_rate
-
-            capex = revenue * rows[i]['CAPEX']
-
-            bfr = revenue * rows[i]['BFR']
-
-            fcff = (
-                ebitda
-                - tax
-                - capex
-                - bfr
+            revenue_test *= (
+                1 + rows[i]["Growth"]
             )
 
-            fcffs_test.append(fcff)
+            ebitda_test = (
+                revenue_test
+                * (margin / 100)
+            )
 
-        discounts_test = 1 / (
-            (1 + w/100) ** periods
+            tax_test = (
+                ebitda_test
+                * tax_rate
+            )
+
+            capex_test = (
+                revenue_test
+                * rows[i]["CAPEX"]
+            )
+
+            bfr_test = (
+                revenue_test
+                * rows[i]["BFR"]
+            )
+
+            fcff_test = (
+                ebitda_test
+                - tax_test
+                - capex_test
+                - bfr_test
+            )
+
+            fcffs_test.append(fcff_test)
+
+        discounts_test = (
+            1
+            / ((1 + w/100) ** periods)
         )
 
         pv_fcff_test = (
@@ -431,13 +554,13 @@ for w in wacc_range:
             * discounts_test
         ).sum()
 
-        terminal_fcff = (
+        terminal_fcff_test = (
             fcffs_test[-1]
             * (1 + terminal_growth)
         )
 
         tv_test = (
-            terminal_fcff
+            terminal_fcff_test
             /
             (
                 (w/100)
@@ -466,129 +589,32 @@ for w in wacc_range:
         )
 
         row_values.append(
-            round(price_test,0)
+            round(price_test, 0)
         )
 
     heatmap_ebitda.append(row_values)
-    import plotly.graph_objects as go
 
-fig1 = go.Figure(
+fig_ebitda = go.Figure(
     data=go.Heatmap(
         z=heatmap_ebitda,
-        x=ebitda_range,
-        y=wacc_range,
+        x=[f"{x:.2f}%" for x in ebitda_range],
+        y=[f"{x:.2f}%" for x in wacc_range],
         colorscale="RdYlGn",
+        reversescale=True,
         text=heatmap_ebitda,
-        texttemplate="%{text}",
-        reversescale=True
+        texttemplate="%{text}"
     )
 )
 
-fig1.update_layout(
-    title="WACC vs Marge EBITDA",
-    xaxis_title="Marge EBITDA (%)",
-    yaxis_title="WACC (%)"
+fig_ebitda.update_layout(
+    title="Valeur par Action : WACC vs Marge EBITDA",
+    xaxis_title="Marge EBITDA",
+    yaxis_title="WACC"
 )
 
 st.plotly_chart(
-    fig1,
+    fig_ebitda,
     use_container_width=True
-)
-st.subheader("📈 Heatmap WACC vs Croissance Terminale")
-
-g_range = [1,2,3,4,5]
-
-wacc_range = [8,9,10,11,12,13]
-
-heatmap_g = []
-
-for w in wacc_range:
-
-    row_values = []
-
-    for g in g_range:
-
-        if w/100 <= g/100:
-
-            row_values.append(None)
-
-        else:
-
-            tv_test = (
-                fcff_terminal
-                /
-                (
-                    (w/100)
-                    - (g/100)
-                )
-            )
-
-            pv_tv_test = (
-                tv_test
-                * discounts[-1]
-            )
-
-            ev_test = (
-                pv_fcff_sum
-                + pv_tv_test
-            )
-
-            eq_test = (
-                ev_test
-                - net_debt
-            )
-
-            price_test = (
-                eq_test
-                / shares
-            )
-
-            row_values.append(
-                round(price_test,0)
-            )
-
-    heatmap_g.append(row_values)
-    fig2 = go.Figure(
-    data=go.Heatmap(
-        z=heatmap_g,
-        x=g_range,
-        y=wacc_range,
-        colorscale="RdYlGn",
-        text=heatmap_g,
-        texttemplate="%{text}",
-        reversescale=True
-    )
-)
-
-fig2.update_layout(
-    title="WACC vs Croissance Terminale",
-    xaxis_title="Croissance Terminale (%)",
-    yaxis_title="WACC (%)"
-)
-
-st.plotly_chart(
-    fig2,
-    use_container_width=True
-)
-heatmap_values.append(row_values)
-import pandas as pd
-
-heatmap_df = pd.DataFrame(
-    heatmap_values,
-    columns=["-10%","-5%","0%","+5%","+10%"],
-    index=["-1%","0%","+1%","+2%"]
-)
-
-fig_heatmap = go.Figure(
-    data=go.Heatmap(
-        z=heatmap_values,
-        x=["-10%", "-5%", "0%", "+5%", "+10%"],
-        y=["-1%", "0%", "+1%", "+2%"],
-        colorscale="RdYlGn",
-        text=heatmap_values,
-        texttemplate="%{text}",
-        showscale=True
-    )
 )
 
 fig_heatmap.update_layout(
