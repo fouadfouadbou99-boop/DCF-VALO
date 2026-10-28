@@ -6,6 +6,7 @@ from datetime import date
 from io import BytesIO
 import json
 import plotly.graph_objects as go
+from scenario_module import run_scenarios
 st.set_page_config(page_title="Corporate Valuation Platform", layout="wide")
 
 st.title("Corporate Valuation Platform")
@@ -656,6 +657,19 @@ st.download_button(
     data=json_string,
     file_name=f"{company}.json",
     mime="application/json"
+)
+run_scenarios(
+    revenue0,
+    rows,
+    bp_years,
+    tax_rate,
+    terminal_growth,
+    wacc,
+    periods,
+    net_debt,
+    shares,
+    pv_fcff_sum,
+    fcff_terminal,
 )
 
 
