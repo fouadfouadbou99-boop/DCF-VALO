@@ -109,7 +109,7 @@ for i in range(bp_years):
             - capex
             - bfr
         )
-fcff = round(fcff, 0)
+    fcff = round(fcff, 0)
     bp.append([
     first_bp_year + i,
     revenue,
