@@ -408,11 +408,7 @@ st.plotly_chart(
     fig_heatmap,
     use_container_width=True
 )
-    st.plotly_chart(
-    fig_heatmap,
-    use_container_width=True
-)
-
+  
 
 # =====================
 # SAUVEGARDE JSON
