@@ -88,14 +88,12 @@ for w in wacc_range:
             round(price_test, 0)
         )
 
-    heatmap_ebitda.append(
+        heatmap_ebitda.append(
         row_values
     )
 
-                    round(price_test, 0)
-                )
 
-        heatmap_g.append(row_values)
+   
 
     fig_g = go.Figure(
         data=go.Heatmap(
