@@ -110,7 +110,6 @@ for i in range(bp_years):
             - bfr
         )
 fcff = round(fcff, 0)
-
     bp.append([
     first_bp_year + i,
     revenue,
