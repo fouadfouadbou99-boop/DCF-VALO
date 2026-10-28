@@ -215,7 +215,7 @@ st.dataframe(dcf_df, use_container_width=True)
 # SAUVEGARDE JSON
 # =====================
 
-save_data = {
+save_data = {]
     "company": company,
     "valuation_date": str(valuation_date),
     "closing_month": closing_month,
