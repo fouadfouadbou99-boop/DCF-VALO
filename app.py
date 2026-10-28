@@ -420,8 +420,7 @@ for w in wacc_range:
 
     row_values = []
 
-    for margin in ebitda_range:
-
+   
         revenue_test = revenue0
 
         fcffs_test = []
