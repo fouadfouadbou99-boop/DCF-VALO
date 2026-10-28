@@ -165,7 +165,7 @@ et d'apprécier la sensibilité du DCF aux hypothèses de long terme.
     heatmap_ebitda = []
     for w in wacc_range:
 
-    row_values = []
+        row_values = []
 
     for margin in ebitda_range:
 
