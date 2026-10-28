@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-def run_scenarios(...)
+def run_scenarios(
     revenue0,
     rows,
     bp_years,
