@@ -209,6 +209,79 @@ dcf_df = pd.DataFrame({
     'Facteur': discounts,
     'PV FCFF': pv_fcff
 })
+st.subheader("Sensibilité")
+
+results = []
+
+for w in np.arange(
+    max(0.05, wacc - 0.02),
+    wacc + 0.021,
+    0.005
+):
+
+    for g in np.arange(
+        0.01,
+        0.05,
+        0.005
+    ):
+
+        if w > g:
+
+            tev = (
+                pv_fcff_sum
+                + ((fcff_terminal / (w - g))
+                * discounts[-1])
+            )
+
+            eq = tev - net_debt
+
+            px = eq / shares
+
+            results.append([
+                round(w*100,2),
+                round(g*100,2),
+                round(px,2)
+            ])
+
+sens = pd.DataFrame(
+    results,
+    columns=[
+        "WACC",
+        "g",
+        "Prix"
+    ]
+)
+
+st.dataframe(
+    sens,
+    use_container_width=True
+)
+st.subheader("Stress Tests")
+
+stress = pd.DataFrame({
+    "Scénario": [
+        "Optimiste",
+        "Base",
+        "Dégradé",
+        "Crise"
+    ],
+    "Facteur": [
+        1.15,
+        1.00,
+        0.85,
+        0.70
+    ]
+})
+
+stress["Prix Action"] = (
+    share_price
+    * stress["Facteur"]
+)
+
+st.dataframe(
+    stress,
+    use_container_width=True
+)
 buf = BytesIO()
 
 with pd.ExcelWriter(
@@ -246,11 +319,7 @@ with pd.ExcelWriter(
 
 buf.seek(0)
 
-st.download_button(
-    "📊 Télécharger Excel",
-    buf.getvalue(),
-    "Corporate_Valuation.xlsx"
-)
+
 
 # =====================
 # SAUVEGARDE JSON
