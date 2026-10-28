@@ -59,48 +59,39 @@ def run_scenarios(
 
     heatmap_g = []
 
-    for w in wacc_range:
+    heatmap_ebitda = []
 
-        row_values = []
+for w in wacc_range:
 
-        for g in g_range:
+    row_values = []
 
-            w_test = w / 100
-            g_test = g / 100
+    for margin in ebitda_range:
 
-            if w_test <= g_test:
+        # Impact EBITDA
+        ebitda_factor = (
+            margin / base_margin
+        )
 
-                row_values.append(None)
+        # Impact WACC
+        wacc_factor = (
+            wacc / (w / 100)
+        )
 
-            else:
+        # Valeur ajustée
+        price_test = (
+            share_price
+            * ebitda_factor
+            * wacc_factor
+        )
 
-                tv_test = (
-                    fcff_terminal
-                    /
-                    (w_test - g_test)
-                )
+        row_values.append(
+            round(price_test, 0)
+        )
 
-                pv_tv_test = (
-                    tv_test
-                    * (1 / ((1 + w_test) ** periods[-1]))
-                )
+    heatmap_ebitda.append(
+        row_values
+    )
 
-                ev_test = (
-                    pv_fcff_sum
-                    + pv_tv_test
-                )
-
-                eq_test = (
-                    ev_test
-                    - net_debt
-                )
-
-                price_test = (
-                    eq_test
-                    / shares
-                )
-
-                row_values.append(
                     round(price_test, 0)
                 )
 
