@@ -318,7 +318,105 @@ with pd.ExcelWriter(
         )
 
 buf.seek(0)
+st.subheader("🔥 Heatmap Stress Tests")
+growth_shocks = [-10, -5, 0, 5, 10]
 
+wacc_shocks = [-1, 0, 1, 2]
+
+heatmap_values = []
+
+for wacc_delta in wacc_shocks:
+
+    row_values = []
+
+    for growth_delta in growth_shocks:
+
+        stressed_growth = (
+            terminal_growth +
+            growth_delta / 100
+        )
+
+        stressed_wacc = (
+            wacc +
+            wacc_delta / 100
+        )
+
+        if stressed_wacc <= stressed_growth:
+
+            row_values.append(np.nan)
+
+        else:
+
+            stressed_tv = (
+                fcff_terminal
+                /
+                (
+                    stressed_wacc
+                    - stressed_growth
+                )
+            )
+
+            stressed_pv_tv = (
+                stressed_tv
+                * discounts[-1]
+            )
+
+            stressed_ev = (
+                pv_fcff_sum
+                + stressed_pv_tv
+            )
+
+            stressed_eq = (
+                stressed_ev
+                - net_debt
+            )
+
+            stressed_price = (
+                stressed_eq
+                / shares
+            )
+
+            row_values.append(
+                round(
+                    stressed_price,
+                    2
+                )
+            )
+
+    heatmap_values.append(row_values)
+    fig_heatmap = px.imshow(
+
+    heatmap_values,
+
+    labels=dict(
+        x="Variation Croissance (%)",
+        y="Variation WACC (%)",
+        color="Valeur Action"
+    ),
+
+    x=[
+        "-10%",
+        "-5%",
+        "0%",
+        "+5%",
+        "+10%"
+    ],
+
+    y=[
+        "-1%",
+        "0%",
+        "+1%",
+        "+2%"
+    ],
+
+    text_auto=True,
+
+    color_continuous_scale="RdYlGn"
+)
+    st.plotly_chart(
+    fig_heatmap,
+    use_container_width=True
+)
 
 
 # =====================
