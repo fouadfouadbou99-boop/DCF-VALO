@@ -216,64 +216,41 @@ with pd.ExcelWriter(
     engine="openpyxl"
 ) as writer:
 
-    bp_df.to_excel(
-        writer,
-        sheet_name="BusinessPlan",
-        index=False
-    )
+    if 'bp_df' in locals():
+        bp_df.to_excel(
+            writer,
+            sheet_name="BusinessPlan",
+            index=False
+        )
 
-    dcf_df.to_excel(
-        writer,
-        sheet_name="DCF",
-        index=False
-    )
+    if 'dcf_df' in locals():
+        dcf_df.to_excel(
+            writer,
+            sheet_name="DCF",
+            index=False
+        )
 
-    sens.to_excel(
-        writer,
-        sheet_name="Sensibilite",
-        index=False
-    )
+    if 'sens' in locals():
+        sens.to_excel(
+            writer,
+            sheet_name="Sensibilite",
+            index=False
+        )
 
-    stress.to_excel(
-        writer,
-        sheet_name="Stress",
-        index=False
-    )
-
-buf.seek(0)
-
-buf = BytesIO()
-
-with pd.ExcelWriter(
-    buf,
-    engine="openpyxl"
-) as writer:
-
-    bp_df.to_excel(
-        writer,
-        sheet_name="BusinessPlan",
-        index=False
-    )
-
-    dcf_df.to_excel(
-        writer,
-        sheet_name="DCF",
-        index=False
-    )
-
-    sens.to_excel(
-        writer,
-        sheet_name="Sensibilite",
-        index=False
-    )
-
-    stress.to_excel(
-        writer,
-        sheet_name="Stress",
-        index=False
-    )
+    if 'stress' in locals():
+        stress.to_excel(
+            writer,
+            sheet_name="Stress",
+            index=False
+        )
 
 buf.seek(0)
+
+st.download_button(
+    "📊 Télécharger Excel",
+    buf.getvalue(),
+    "Corporate_Valuation.xlsx"
+)
 
 # =====================
 # SAUVEGARDE JSON
