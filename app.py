@@ -234,37 +234,17 @@ save_data = {
     "discount_mode": discount_mode,
     "fcff_method": fcff_method,
     "rows": rows
-}
-fig = px.line(bp_df, x='Année', y=['CA','EBITDA','FCFF'])
-st.plotly_chart(fig, use_container_width=True)
-
-st.subheader('Sensibilité')
-results=[]
-for w in np.arange(max(0.05,wacc-0.02), wacc+0.021, 0.005):
-    for g in np.arange(0.01,0.05,0.005):
-        if w>g:
-            tev = pv_fcff_sum + ((fcff_terminal/(w-g))*discounts[-1])
-            eq = tev-net_debt
-            results.append([round(w*100,2),round(g*100,2),eq/shares])
-
-sens = pd.DataFrame(results, columns=['WACC','g','Prix'])
-st.dataframe(sens, use_container_width=True)
-
-st.subheader('Stress Tests')
-stress = pd.DataFrame({
-    'Scénario':['Optimiste','Base','Dégradé','Crise'],
-    'Facteur':[1.15,1.0,0.85,0.70]
-})
-stress['Prix Action']=share_price*stress['Facteur']
-st.dataframe(stress, use_container_width=True)
-
-buf = BytesIO()
-with pd.ExcelWriter(buf, engine='openpyxl') as writer:
-    bp_df.to_excel(writer, sheet_name='BusinessPlan', index=False)
-    dcf_df.to_excel(writer, sheet_name='DCF', index=False)
-    sens.to_excel(writer, sheet_name='Sensibilite', index=False)
-    stress.to_excel(writer, sheet_name='Stress', index=False)
-
-buf.seek(0)
 st.download_button('Télécharger Excel', buf.getvalue(), 'Corporate_Valuation.xlsx')
+    json_string = json.dumps(
+    save_data,
+    indent=4,
+    ensure_ascii=False
+)
+
+st.download_button(
+    label="💾 Sauvegarder dossier JSON",
+    data=json_string,
+    file_name=f"{company}.json",
+    mime="application/json"
+)
 
