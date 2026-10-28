@@ -384,34 +384,29 @@ for wacc_delta in wacc_shocks:
             )
 
     heatmap_values.append(row_values)
-    fig_heatmap = px.imshow(
+    import pandas as pd
 
+heatmap_df = pd.DataFrame(
     heatmap_values,
+    columns=["-10%","-5%","0%","+5%","+10%"],
+    index=["-1%","0%","+1%","+2%"]
+)
 
-    labels=dict(
-        x="Variation Croissance (%)",
-        y="Variation WACC (%)",
-        color="Valeur Action"
-    ),
-
-    x=[
-        "-10%",
-        "-5%",
-        "0%",
-        "+5%",
-        "+10%"
-    ],
-
-    y=[
-        "-1%",
-        "0%",
-        "+1%",
-        "+2%"
-    ],
-
-    text_auto=True,
-
+fig_heatmap = px.imshow(
+    heatmap_df,
+    text_auto=".0f",
     color_continuous_scale="RdYlGn"
+)
+
+fig_heatmap.update_layout(
+    title="Heatmap Stress Tests",
+    xaxis_title="Variation Croissance",
+    yaxis_title="Variation WACC"
+)
+
+st.plotly_chart(
+    fig_heatmap,
+    use_container_width=True
 )
     st.plotly_chart(
     fig_heatmap,
