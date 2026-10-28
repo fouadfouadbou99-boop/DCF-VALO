@@ -617,11 +617,7 @@ st.plotly_chart(
     use_container_width=True
 )
 
-fig_heatmap.update_layout(
-    title="Heatmap Stress Tests",
-    xaxis_title="Variation Croissance",
-    yaxis_title="Variation WACC"
-)
+
 
 st.plotly_chart(
     fig_heatmap,
