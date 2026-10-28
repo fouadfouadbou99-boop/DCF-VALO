@@ -168,32 +168,26 @@ et d'apprécier la sensibilité du DCF aux hypothèses de long terme.
 
     for w in wacc_range:
 
-        row_values = []
+    row_values = []
 
-        for margin in ebitda_range:
+    for margin in ebitda_range:
 
-            ev_test = (
+        price_test = (
+            (
                 pv_fcff_sum
                 * (margin / base_margin)
             )
-
-            eq_test = (
-                ev_test
-                - net_debt
-            )
-
-            price_test = (
-                eq_test
-                / shares
-            )
-
-            row_values.append(
-                round(price_test, 0)
-            )
-
-        heatmap_ebitda.append(
-            row_values
+            /
+            ((w / 100) / wacc)
         )
+
+        row_values.append(
+            round(price_test, 0)
+        )
+
+    heatmap_ebitda.append(
+        row_values
+    )
 
     fig_ebitda = go.Figure(
         data=go.Heatmap(
