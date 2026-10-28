@@ -5,7 +5,6 @@ import plotly.express as px
 from datetime import date
 from io import BytesIO
 import json
-import plotly.graph_objects as go
 from scenario_module import run_scenarios
 
 st.set_page_config(page_title="Corporate Valuation Platform", layout="wide")
