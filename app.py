@@ -518,37 +518,6 @@ for w in wacc_range:
         row_values
     )
 
- else:
-
-            tv_test = (
-                fcff_terminal
-                /
-                (w_test - g_test)
-            )
-
-            pv_tv_test = (
-                tv_test
-                * discounts[-1]
-            )
-
-            ev_test = (
-                pv_fcff_sum
-                + pv_tv_test
-            )
-
-            eq_test = (
-                ev_test
-                - net_debt
-            )
-
-            price_test = (
-                eq_test
-                / shares
-            )
-
-            row_values.append(
-                round(price_test, 0)
-            )
 
     heatmap_g.append(row_values)
 
