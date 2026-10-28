@@ -1,7 +1,6 @@
 # scenario_module.py
 
 import streamlit as st
-import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 
@@ -23,10 +22,6 @@ def run_scenarios(
     st.divider()
 
     st.header("📊 Module Scénarios")
-
-    st.success(
-        "Module scénarios chargé correctement"
-    )
 
     # =====================================================
     # HEATMAP 1
@@ -66,6 +61,53 @@ def run_scenarios(
 
     heatmap_g = []
 
+    for w in wacc_range:
+
+        row_values = []
+
+        for g in g_range:
+
+            w_test = w / 100
+            g_test = g / 100
+
+            if w_test <= g_test:
+
+                row_values.append(None)
+
+            else:
+
+                tv_test = (
+                    fcff_terminal
+                    /
+                    (w_test - g_test)
+                )
+
+                pv_tv_test = (
+                    tv_test
+                    * (1 / ((1 + w_test) ** periods[-1]))
+                )
+
+                ev_test = (
+                    pv_fcff_sum
+                    + pv_tv_test
+                )
+
+                eq_test = (
+                    ev_test
+                    - net_debt
+                )
+
+                price_test = (
+                    eq_test
+                    / shares
+                )
+
+                row_values.append(
+                    round(price_test, 0)
+                )
+
+        heatmap_g.append(row_values)
+
     fig_g = go.Figure(
         data=go.Heatmap(
             z=heatmap_g,
@@ -74,7 +116,7 @@ def run_scenarios(
             colorscale="RdYlGn",
             reversescale=True,
             text=heatmap_g,
-            texttemplate="%{text}",
+            texttemplate="%{text}"
         )
     )
 
@@ -92,11 +134,12 @@ def run_scenarios(
     st.markdown(
         """
 La matrice présente l'impact combiné du coût moyen pondéré du capital (WACC)
-et du taux de croissance terminale sur la valeur par action. Une augmentation
-de la croissance terminale accroît mécaniquement la valeur terminale tandis
-qu'une hausse du WACC réduit la valeur actuelle des flux futurs. Cette analyse
-permet d'apprécier la sensibilité de la valorisation aux hypothèses retenues
-pour la période postérieure au Business Plan.
+et du taux de croissance terminale sur la valeur par action. Une hausse du
+taux de croissance terminale entraîne une augmentation de la valeur terminale
+et donc de la valorisation de l'entreprise. À l'inverse, un relèvement du
+WACC réduit la valeur actuelle des flux futurs et diminue la valorisation.
+Cette analyse permet d'encadrer la valeur obtenue dans le scénario central
+et d'apprécier la sensibilité du DCF aux hypothèses de long terme.
 """
     )
 
@@ -139,16 +182,18 @@ pour la période postérieure au Business Plan.
                 - net_debt
             )
 
-            px_test = (
+            price_test = (
                 eq_test
                 / shares
             )
 
             row_values.append(
-                round(px_test, 0)
+                round(price_test, 0)
             )
 
-        heatmap_ebitda.append(row_values)
+        heatmap_ebitda.append(
+            row_values
+        )
 
     fig_ebitda = go.Figure(
         data=go.Heatmap(
@@ -158,7 +203,7 @@ pour la période postérieure au Business Plan.
             colorscale="RdYlGn",
             reversescale=True,
             text=heatmap_ebitda,
-            texttemplate="%{text}",
+            texttemplate="%{text}"
         )
     )
 
@@ -175,10 +220,11 @@ pour la période postérieure au Business Plan.
 
     st.markdown(
         """
-Cette matrice mesure l'effet combiné du WACC et de la marge EBITDA sur la
-valeur par action. L'amélioration de la rentabilité opérationnelle se traduit
-par une progression de la valorisation tandis qu'une augmentation du taux
-d'actualisation réduit la valeur économique de l'entreprise. La zone centrale
-correspond aux hypothèses retenues dans le scénario de référence.
+Cette matrice illustre l'incidence de la marge EBITDA sur la valeur par action.
+Une amélioration de la rentabilité opérationnelle se traduit mécaniquement par
+une augmentation de la génération de flux de trésorerie et donc de la valeur
+de l'entreprise. La zone centrale correspond aux hypothèses opérationnelles
+retenues dans le scénario de référence et permet d'apprécier l'impact d'une
+amélioration ou d'une dégradation de la rentabilité.
 """
     )
