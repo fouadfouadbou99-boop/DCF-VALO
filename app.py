@@ -153,8 +153,6 @@ else:
     periods = np.array([fraction+i for i in range(bp_years)])
 
 discounts = 1/((1+wacc)**periods)
-st.write("Périodes :", periods)
-st.write("Facteurs :", discounts)
 
 fcffs = bp_df['FCFF'].values
 pv_fcff = fcffs * discounts
