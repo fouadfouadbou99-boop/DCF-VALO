@@ -66,52 +66,39 @@ def run_scenarios(
 
     heatmap_g = []
 
-    for w in wacc_range:
+  heatmap_ebitda = []
 
-        row_values = []
+for w in wacc_range:
 
-        for g in g_range:
+    row_values = []
 
-            w_test = w / 100
-            g_test = g / 100
+    for margin in ebitda_range:
 
-            if w_test <= g_test:
+        ev_test = (
+            pv_fcff_sum
+            * (
+                margin
+                / base_margin
+            )
+        )
 
-                row_values.append(None)
+        eq_test = (
+            ev_test
+            - net_debt
+        )
 
-            else:
+        px_value = (
+            eq_test
+            / shares
+        )
 
-                tv_test = (
-                    fcff_terminal
-                    /
-                    (w_test - g_test)
-                )
+        row_values.append(
+            round(px_value, 0)
+        )
 
-                pv_tv_test = (
-                    tv_test
-                    * (1 / ((1 + w_test) ** periods[-1]))
-                )
-
-                ev_test = (
-                    pv_fcff_sum
-                    + pv_tv_test
-                )
-
-                eq_test = (
-                    ev_test
-                    - net_debt
-                )
-
-                px_test = (
-                    eq_test
-                    / shares
-                )
-
-                row_values.append(
-                    round(px_test, 0)
-                )
-
-        heatmap_g.append(row_values)
+    heatmap_ebitda.append(
+        row_values
+    )
 
     fig_g = go.Figure(
         data=go.Heatmap(
