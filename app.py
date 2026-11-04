@@ -32,9 +32,27 @@ with st.sidebar:
     debt_weight = st.number_input("Poids dette (%)", value=20.0)/100
 
     st.header("Valorisation")
-    terminal_growth = st.number_input("Croissance terminale (%)", value=2.0)/100
-    net_debt = st.number_input("Dette nette", value=100.0)
-    shares = st.number_input("Nb actions (millions)", value=10.0)
+
+terminal_growth = st.number_input(
+    "Croissance terminale (%)",
+    value=2.0
+) / 100
+
+fcff_normatif = st.number_input(
+    "FCFF normatif (0 = automatique)",
+    value=0.0
+)
+
+net_debt = st.number_input(
+    "Dette nette + minoritaires",
+    value=100.0
+)
+
+shares = st.number_input(
+    "Nb actions (millions)",
+    value=10.0
+)
+
 
     discount_mode = st.selectbox(
         "Méthode d'actualisation",
@@ -92,7 +110,7 @@ for i in range(bp_years):
 
     nopat = ebit * (1 - tax_rate)
 
-    tax = ebitda * tax_rate
+    tax = ebit * tax_rate
 
     if fcff_method == "Excel":
 
@@ -160,11 +178,21 @@ fcffs = bp_df['FCFF'].values
 pv_fcff = fcffs * discounts
 pv_fcff_sum = pv_fcff.sum()
 
-fcff_terminal = fcffs[-1]*(1+terminal_growth)
-tv = fcff_terminal/(wacc-terminal_growth) if wacc>terminal_growth else 0
-pv_tv = tv*discounts[-1]
+if fcff_normatif > 0:
+    terminal_cashflow = fcff_normatif
+else:
+    terminal_cashflow = fcffs[-1] * (1 + terminal_growth)
+
+tv = (
+    terminal_cashflow / (wacc - terminal_growth)
+    if wacc > terminal_growth
+    else 0
+)
+
+pv_tv = tv * discounts[-1]
 
 enterprise_value = pv_fcff_sum + pv_tv
+fcff_terminal = terminal_cashflow
 equity_value = enterprise_value - net_debt
 share_price = equity_value / shares if shares>0 else 0
 
