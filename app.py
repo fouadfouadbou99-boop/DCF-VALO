@@ -54,7 +54,7 @@ shares = st.number_input(
 )
 
 
-    discount_mode = st.selectbox(
+discount_mode = st.selectbox(
         "Méthode d'actualisation",
         ["Année pleine", "Mid-Year", "Durée résiduelle"]
     )
