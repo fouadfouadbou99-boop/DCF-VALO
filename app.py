@@ -96,7 +96,7 @@ for i in range(bp_years):
     # Niveau brut du BFR pour l'année t
     bfr_level = revenue * rows[i]['BFR']
     
-    # Flux réel : Variation du BFR d'une année sur l'autre (BFR_t - BFR_t-1)
+    # Flux réel : Variation du BFR (BFR_t - BFR_t-1)
     bfr_variation = bfr_level - bfr_previous
     
     ebit = ebitda - dep
