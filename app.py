@@ -290,4 +290,4 @@ if run_scenarios is not None:
     st.header("5. Module de Scénarios Avancés")
     try:
         run_scenarios()
-            revenue0, rows, bp_years, tax_rate, terminal_growth, 
+revenue0, rows, bp_years, tax_rate, terminal_growth, 
