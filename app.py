@@ -142,7 +142,7 @@ if discount_mode == 'Année pleine':
 elif discount_mode == 'Mid-Year':
     periods = np.arange(1, bp_years + 1) - 0.5
 else:
-    # Calcul de la fraction d'année restante (Correction de la syntaxe de la ligne conditionnelle)
+    # Correction de la syntaxe de la ligne conditionnelle
     days_in_month = 28 if closing_month == 2 else 30 if closing_month in [4, 6, 9, 11] else 31
     year_end = date(valuation_date.year, closing_month, days_in_month)
     if valuation_date > year_end:
