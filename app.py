@@ -86,7 +86,7 @@ rows = []
 for i in range(bp_years):
     c1,c2,c3,c4,c5 = st.columns(5)
     rows.append({})
-        c1, c2, c3, c4, c5, c6 = st.columns(6)
+c1, c2, c3, c4, c5, c6 = st.columns(6)
 
 rows.append({
     'Growth': c1.number_input(f'Croissance Y{i+1} %', value=5.0, key=f'g{i}') / 100,
