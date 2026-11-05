@@ -61,45 +61,38 @@ cost_equity = rf + beta * mrp + sp
 wacc = ((1 - debt_weight) * cost_equity) + (debt_weight * cost_debt * (1 - tax_rate))
 
 # =====================
-# BUSINESS PLAN
+# CALCUL DU BUSINESS PLAN CORRIGÉ
 # =====================
-st.header("1. Business Plan Inputs")
-
-revenue0 = st.number_input("Chiffre d'Affaires de base (Année 0)", value=1000.0)
-
-# Saisie dynamique des hypothèses annuelles sous forme de tableau compact
-rows = []
-for i in range(bp_years):
-    st.markdown(f"**Année {i+1} ({first_bp_year + i})**")
-    c1, c2, c3, c4, c5 = st.columns(5)
-    rows.append({
-        'Growth': c1.number_input('Croissance %', value=5.0, key=f'g{i}') / 100,
-        'EBITDA': c2.number_input('Marge EBITDA %', value=25.0, key=f'e{i}') / 100,
-        'D&A': c3.number_input('Amort. %', value=3.0, key=f'd{i}') / 100,
-        'CAPEX': c4.number_input('CAPEX %', value=5.0, key=f'c{i}') / 100,
-        'BFR': c5.number_input('BFR %', value=2.0, key=f'b{i}') / 100,
-    })
-
-# Calcul des projections financières
 revenue = revenue0
 bp = []
+
+# 1. Calcul du niveau de BFR initial (Année 0) pour pouvoir calculer les variations futures
+# On prend par défaut le taux de l'année 1 pour estimer le point de départ, ou une valeur fixe.
+bfr_previous = revenue0 * rows[0]['BFR'] 
 
 for i in range(bp_years):
     revenue *= (1 + rows[i]['Growth'])
     ebitda = revenue * rows[i]['EBITDA']
     dep = revenue * rows[i]['D&A']
     capex = revenue * rows[i]['CAPEX']
-    bfr = revenue * rows[i]['BFR']
+    
+    # Calcul du NIVEAU de BFR de l'année t
+    bfr_level = revenue * rows[i]['BFR']
+    
+    # Calcul de la VARIATION du BFR (c'est ce flux qui compte !)
+    bfr_variation = bfr_level - bfr_previous
+    
     ebit = ebitda - dep
     nopat = ebit * (1 - tax_rate)
     
-    # Calcul de l'impôt théorique sur l'EBIT
+    # Choix de la formule selon l'IPO (EBITDA - IS - CAPEX - Variation BFR)
+    # Note : Vérifiez si le taux d'IS de la sidebar doit être ajusté à ~32.6% pour correspondre à l'IPO
     tax_on_ebit = ebit * tax_rate 
 
     if fcff_method == "Excel alternative":
-        fcff = ebitda - tax_on_ebit - capex - bfr
+        fcff = ebitda - tax_on_ebit - capex - bfr_variation
     else:
-        fcff = nopat + dep - capex - bfr
+        fcff = nopat + dep - capex - bfr_variation
         
     bp.append([
         int(first_bp_year + i),
@@ -109,18 +102,13 @@ for i in range(bp_years):
         round(ebit, 2),
         round(nopat, 2),
         round(capex, 2),
-        round(bfr, 2),
+        round(bfr_variation, 2), # On affiche désormais la variation
         round(fcff, 2)
     ])
+    
+    # On stocke le BFR actuel pour l'itération de l'année suivante
+    bfr_previous = bfr_level 
 
-# Génération du DataFrame
-bp_df = pd.DataFrame(
-    bp,
-    columns=["Année", "CA", "EBITDA", "Amortissements", "EBIT", "NOPAT", "CAPEX", "Variation BFR", "FCFF"]
-)
-
-st.subheader("Tableau de flux projetés (BP)")
-st.dataframe(bp_df.set_index("Année"), use_container_width=True)
 
 # =====================
 # ACTUALISATION & VALORISATION
