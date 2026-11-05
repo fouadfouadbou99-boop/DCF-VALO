@@ -87,39 +87,42 @@ for i in range(bp_years):
 
     rows.append({
 
-        'Growth': c1.number_input(
-            f'Croissance Y{i+1} %',
-            value=5.0,
-            key=f'g{i}'
-        ) / 100,
+    'Growth': c1.number_input(
+        f'Croissance Y{i+1} %',
+        value=5.0,
+        key=f'g{i}'
+    ) / 100,
 
-        'EBITDA': c2.number_input(
-            f'EBITDA Y{i+1} %',
-            value=25.0,
-            key=f'e{i}'
-        ) / 100,
+    'EBITDA': c2.number_input(
+        f'EBITDA Y{i+1} %',
+        value=25.0,
+        key=f'e{i}'
+    ) / 100,
 
-        'D&A': c3.number_input(
-            f'Amort. Y{i+1} %',
-            value=3.0,
-            key=f'd{i}'
-        ) / 100,
+    'D&A': c3.number_input(
+        f'Amort. Y{i+1} %',
+        value=3.0,
+        key=f'd{i}'
+    ) / 100,
 
-        'CAPEX': c4.number_input(
-            f'CAPEX Y{i+1} %',
-            value=5.0,
-            key=f'c{i}'
-        ) / 100,
+    'CAPEX': c4.number_input(
+        f'CAPEX Y{i+1} %',
+        value=5.0,
+        key=f'c{i}'
+    ) / 100,
 
-        'BFR': c5.number_input(
-            f'BFR Y{i+1} %',
-            value=2.0,
-            key=f'b{i}'
-        ) / 100,
+    'BFR': c5.number_input(
+        f'BFR Y{i+1} %',
+        value=2.0,
+        key=f'b{i}'
+    ) / 100,
 
-        
-
-    })
+    'TAX_REX': c6.number_input(
+        f'IS/REX Y{i+1} %',
+        value=26.0,
+        key=f't{i}'
+    ) / 100
+})
 
 revenue = revenue0
 bp=[]
@@ -167,6 +170,7 @@ for i in range(bp_years):
     dep,
     ebit,
     rows[i]['TAX_REX'] * 100,
+    tax,
     nopat,
     capex,
     bfr,
@@ -181,6 +185,7 @@ for i in range(bp_years):
     "Amortissements",
     "EBIT",
     "IS sur REX %",
+    "IS calculé",
     "NOPAT",
     "CAPEX",
     "Variation BFR",
