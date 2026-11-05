@@ -83,21 +83,51 @@ st.header("Business Plan")
 revenue0 = st.number_input("CA année 0", value=1000.0)
 
 rows = []
+
 for i in range(bp_years):
-    c1,c2,c3,c4,c5 = st.columns(5)
-    rows.append({})
-c1, c2, c3, c4, c5, c6 = st.columns(6)
 
-rows.append({
-    'Growth': c1.number_input(f'Croissance Y{i+1} %', value=5.0, key=f'g{i}') / 100,
-    'EBITDA': c2.number_input(f'EBITDA Y{i+1} %', value=25.0, key=f'e{i}') / 100,
-    'D&A': c3.number_input(f'Amort. Y{i+1} %', value=3.0, key=f'd{i}') / 100,
-    'CAPEX': c4.number_input(f'CAPEX Y{i+1} %', value=5.0, key=f'c{i}') / 100,
-    'BFR': c5.number_input(f'BFR Y{i+1} %', value=2.0, key=f'b{i}') / 100,
-    'TAX_REX': c6.number_input(f'IS/REX Y{i+1} %', value=26.0, key=f't{i}') / 100,
-})
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
 
-calendar_year = valuation_date.year
+    rows.append({
+
+        'Growth': c1.number_input(
+            f'Croissance Y{i+1} %',
+            value=5.0,
+            key=f'g{i}'
+        ) / 100,
+
+        'EBITDA': c2.number_input(
+            f'EBITDA Y{i+1} %',
+            value=25.0,
+            key=f'e{i}'
+        ) / 100,
+
+        'D&A': c3.number_input(
+            f'Amort. Y{i+1} %',
+            value=3.0,
+            key=f'd{i}'
+        ) / 100,
+
+        'CAPEX': c4.number_input(
+            f'CAPEX Y{i+1} %',
+            value=5.0,
+            key=f'c{i}'
+        ) / 100,
+
+        'BFR': c5.number_input(
+            f'BFR Y{i+1} %',
+            value=2.0,
+            key=f'b{i}'
+        ) / 100,
+
+        'TAX_REX': c6.number_input(
+            f'IS/REX Y{i+1} %',
+            value=26.0,
+            key=f't{i}'
+        ) / 100
+
+    })
+
 revenue = revenue0
 bp=[]
 
@@ -117,7 +147,7 @@ for i in range(bp_years):
 
     nopat = ebit * (1 - tax_rate)
 
-    tax = ebit * tax_rate
+    tax = ebit * rows[i]['TAX_REX']
 
     if fcff_method == "Excel":
 
@@ -163,7 +193,10 @@ for i in range(bp_years):
     ]
 )
 st.write(bp_df.head())
-st.dataframe(bp_df, use_container_width=True)
+st.dataframe(
+    sens,
+    use_container_width=True
+)
 
 # =====================
 # ACTUALISATION
