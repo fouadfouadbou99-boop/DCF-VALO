@@ -61,14 +61,31 @@ cost_equity = rf + beta * mrp + sp
 wacc = ((1 - debt_weight) * cost_equity) + (debt_weight * cost_debt * (1 - tax_rate))
 
 # =====================
-# CALCUL DU BUSINESS PLAN CORRIGÉ
+# BUSINESS PLAN
 # =====================
+st.header("1. Business Plan Inputs")
+
+revenue0 = st.number_input("Chiffre d'Affaires de base (Année 0)", value=1000.0)
+
+# Saisie dynamique des hypothèses annuelles sous forme de tableau compact
+rows = []
+for i in range(bp_years):
+    st.markdown(f"**Année {i+1} ({first_bp_year + i})**")
+    c1, c2, c3, c4, c5 = st.columns(5)
+    rows.append({
+        'Growth': c1.number_input('Croissance %', value=5.0, key=f'g{i}') / 100,
+        'EBITDA': c2.number_input('Marge EBITDA %', value=25.0, key=f'e{i}') / 100,
+        'D&A': c3.number_input('Amort. %', value=3.0, key=f'd{i}') / 100,
+        'CAPEX': c4.number_input('CAPEX %', value=5.0, key=f'c{i}') / 100,
+        'BFR': c5.number_input('BFR %', value=2.0, key=f'b{i}') / 100,
+    })
+
+# Calcul des projections financières avec variation du BFR (Méthode IPO)
 revenue = revenue0
 bp = []
 
-# 1. Calcul du niveau de BFR initial (Année 0) pour pouvoir calculer les variations futures
-# On prend par défaut le taux de l'année 1 pour estimer le point de départ, ou une valeur fixe.
-bfr_previous = revenue0 * rows[0]['BFR'] 
+# Correction ici : initialisation du niveau de BFR de l'année 0 en utilisant l'hypothèse de l'année 1
+bfr_previous = revenue0 * rows[0]['BFR']
 
 for i in range(bp_years):
     revenue *= (1 + rows[i]['Growth'])
@@ -76,17 +93,16 @@ for i in range(bp_years):
     dep = revenue * rows[i]['D&A']
     capex = revenue * rows[i]['CAPEX']
     
-    # Calcul du NIVEAU de BFR de l'année t
+    # Niveau brut du BFR pour l'année t
     bfr_level = revenue * rows[i]['BFR']
     
-    # Calcul de la VARIATION du BFR (c'est ce flux qui compte !)
+    # Flux réel : Variation du BFR d'une année sur l'autre (BFR_t - BFR_t-1)
     bfr_variation = bfr_level - bfr_previous
     
     ebit = ebitda - dep
     nopat = ebit * (1 - tax_rate)
     
-    # Choix de la formule selon l'IPO (EBITDA - IS - CAPEX - Variation BFR)
-    # Note : Vérifiez si le taux d'IS de la sidebar doit être ajusté à ~32.6% pour correspondre à l'IPO
+    # Calcul de l'impôt théorique sur l'EBIT
     tax_on_ebit = ebit * tax_rate 
 
     if fcff_method == "Excel alternative":
@@ -102,13 +118,21 @@ for i in range(bp_years):
         round(ebit, 2),
         round(nopat, 2),
         round(capex, 2),
-        round(bfr_variation, 2), # On affiche désormais la variation
+        round(bfr_variation, 2),
         round(fcff, 2)
     ])
     
-    # On stocke le BFR actuel pour l'itération de l'année suivante
-    bfr_previous = bfr_level 
+    # On met à jour la variable pour l'année suivante
+    bfr_previous = bfr_level
 
+# Génération du DataFrame
+bp_df = pd.DataFrame(
+    bp,
+    columns=["Année", "CA", "EBITDA", "Amortissements", "EBIT", "NOPAT", "CAPEX", "Variation BFR", "FCFF"]
+)
+
+st.subheader("Tableau de flux projetés (BP)")
+st.dataframe(bp_df.set_index("Année"), use_container_width=True)
 
 # =====================
 # ACTUALISATION & VALORISATION
@@ -119,7 +143,7 @@ elif discount_mode == 'Mid-Year':
     periods = np.arange(1, bp_years + 1) - 0.5
 else:
     # Calcul de la fraction d'année restante
-    year_end = date(valuation_date.year, closing_month, 28 if closing_month == 2 else 30 if closing_month in [4, 6, 9, 11] else 31)
+    year_end = date(valuation_date.year, closing_month, 28 if closing_month == 2 else 30 if closing_month in [4,6,9,11] else 31)
     if valuation_date > year_end:
         year_end = date(valuation_date.year + 1, closing_month, year_end.day)
     fraction = max(0.01, (year_end - valuation_date).days / 365)
@@ -267,7 +291,3 @@ if run_scenarios is not None:
     try:
         run_scenarios(
             revenue0, rows, bp_years, tax_rate, terminal_growth, 
-            wacc, periods, net_debt, shares, pv_fcff_sum, fcff_terminal
-        )
-    except Exception as e:
-        st.error(f"Erreur lors du chargement des scénarios : {e}")
