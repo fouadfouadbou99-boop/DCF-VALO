@@ -84,7 +84,7 @@ for i in range(bp_years):
 revenue = revenue0
 bp = []
 
-# Correction ici : initialisation du niveau de BFR de l'année 0 en utilisant l'hypothèse de l'année 1
+# Récupération du BFR initial de l'année 1 pour simuler le point de départ en Année 0
 bfr_previous = revenue0 * rows[0]['BFR']
 
 for i in range(bp_years):
@@ -142,8 +142,9 @@ if discount_mode == 'Année pleine':
 elif discount_mode == 'Mid-Year':
     periods = np.arange(1, bp_years + 1) - 0.5
 else:
-    # Calcul de la fraction d'année restante
-    year_end = date(valuation_date.year, closing_month, 28 if closing_month == 2 else 30 if closing_month in [4,6,9,11] else 31)
+    # Calcul de la fraction d'année restante (Correction de la syntaxe de la ligne conditionnelle)
+    days_in_month = 28 if closing_month == 2 else 30 if closing_month in [4, 6, 9, 11] else 31
+    year_end = date(valuation_date.year, closing_month, days_in_month)
     if valuation_date > year_end:
         year_end = date(valuation_date.year + 1, closing_month, year_end.day)
     fraction = max(0.01, (year_end - valuation_date).days / 365)
@@ -289,5 +290,5 @@ if run_scenarios is not None:
     st.write("---")
     st.header("5. Module de Scénarios Avancés")
     try:
-        run_scenarios()
-revenue0, rows, bp_years, tax_rate, terminal_growth, 
+        run_scenarios(
+            revenue0, rows, bp_years, tax_rate, terminal_growth, 
