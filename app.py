@@ -28,10 +28,7 @@ with st.sidebar:
     sp = st.number_input("Prime spécifique (%)", value=1.0)/100
     cost_debt = st.number_input("Coût de la dette (%)", value=5.0)/100
     tax_rate = st.number_input("IS (%)", value=30.0)/100
-    tax_rex = st.number_input(
-    "IS sur REX (%)",
-    value=30.0
-) / 100
+    
     debt_weight = st.number_input("Poids dette (%)", value=20.0)/100
 
     st.header("Valorisation")
@@ -173,6 +170,7 @@ for i in range(bp_years):
     ebitda,
     dep,
     ebit,
+    rows[i]['TAX_REX'] * 100,
     nopat,
     capex,
     bfr,
@@ -181,20 +179,22 @@ for i in range(bp_years):
     bp_df = pd.DataFrame(
     bp,
     columns=[
-        "Année",
-        "CA",
-        "EBITDA",
-        "Amortissements",
-        "EBIT",
-        "NOPAT",
-        "CAPEX",
-        "Variation BFR",
-        "FCFF"
-    ]
+    "Année",
+    "CA",
+    "EBITDA",
+    "Amortissements",
+    "EBIT",
+    "IS sur REX %",
+    "NOPAT",
+    "CAPEX",
+    "Variation BFR",
+    "FCFF"
+]
 )
 st.write(bp_df.head())
+
 st.dataframe(
-    sens,
+    bp_df.round(0),
     use_container_width=True
 )
 
@@ -322,7 +322,10 @@ sens = pd.DataFrame(
     ]
 )
 
-st.dataframe(bp_df.round(0), use_container_width=True)
+st.dataframe(
+    sens,
+    use_container_width=True
+)
 
 st.subheader("Stress Tests")
 
