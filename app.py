@@ -129,7 +129,7 @@ for i in range(bp_years):
             - capex
             - bfr
         )
-    fcff = round(fcff, 0)
+    fcff = float(fcff)
     bp.append([
     first_bp_year + i,
     revenue,
@@ -284,8 +284,11 @@ sens = pd.DataFrame(
 
 st.dataframe(
     sens,
+    st.dataframe(
+    bp_df.round(0),
     use_container_width=True
 )
+
 st.subheader("Stress Tests")
 
 stress = pd.DataFrame({
