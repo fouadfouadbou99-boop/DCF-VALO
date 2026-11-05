@@ -117,11 +117,7 @@ for i in range(bp_years):
             key=f'b{i}'
         ) / 100,
 
-        'TAX_REX': c6.number_input(
-            f'IS/REX Y{i+1} %',
-            value=26.0,
-            key=f't{i}'
-        ) / 100
+        
 
     })
 
