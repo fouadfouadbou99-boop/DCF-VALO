@@ -292,3 +292,7 @@ if run_scenarios is not None:
     try:
         run_scenarios(
             revenue0, rows, bp_years, tax_rate, terminal_growth, 
+             wacc, periods, net_debt, shares, pv_fcff_sum, fcff_terminal
+        )
+    except Exception as e:
+        st.error(f"Erreur lors du chargement des scénarios : {e}")
