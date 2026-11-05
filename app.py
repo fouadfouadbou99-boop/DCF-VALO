@@ -93,14 +93,12 @@ for i in range(bp_years):
     ebit = ebitda - dep
     nopat = ebit * (1 - tax_rate)
     
-    # Correction de la formule d'impôt pour la méthode Excel
+    # Calcul de l'impôt théorique sur l'EBIT
     tax_on_ebit = ebit * tax_rate 
 
     if fcff_method == "Excel alternative":
-        # Formule corrigée cohérente avec la déductibilité des amortissements
         fcff = ebitda - tax_on_ebit - capex - bfr
     else:
-        # DCF Standard académique
         fcff = nopat + dep - capex - bfr
         
     bp.append([
@@ -115,7 +113,7 @@ for i in range(bp_years):
         round(fcff, 2)
     ])
 
-# Génération du DataFrame (EN DEHORS de la boucle pour de meilleures performances)
+# Génération du DataFrame
 bp_df = pd.DataFrame(
     bp,
     columns=["Année", "CA", "EBITDA", "Amortissements", "EBIT", "NOPAT", "CAPEX", "Variation BFR", "FCFF"]
@@ -133,7 +131,7 @@ elif discount_mode == 'Mid-Year':
     periods = np.arange(1, bp_years + 1) - 0.5
 else:
     # Calcul de la fraction d'année restante
-    year_end = date(valuation_date.year, closing_month, 28 if closing_month == 2 else 30 if closing_month in [4,6,9,11] else 31)
+    year_end = date(valuation_date.year, closing_month, 28 if closing_month == 2 else 30 if closing_month in [4, 6, 9, 11] else 31)
     if valuation_date > year_end:
         year_end = date(valuation_date.year + 1, closing_month, year_end.day)
     fraction = max(0.01, (year_end - valuation_date).days / 365)
@@ -178,7 +176,6 @@ summary_df = pd.DataFrame({
 })
 st.dataframe(summary_df.set_index("Indicateur"), use_container_width=True)
 
-# Détail des facteurs d'actualisation
 st.subheader("Détail des calculs d'actualisation (DCF)")
 dcf_df = pd.DataFrame({
     'Année': bp_df['Année'],
@@ -202,7 +199,6 @@ results = []
 for w in wacc_range:
     for g in g_range:
         if w > g:
-            # Pour être rigoureux, le WACC fait varier les facteurs d'actualisation historiques + la VT
             w_discounts = 1 / ((1 + w) ** periods)
             w_pv_fcff = fcffs * w_discounts
             w_fcff_terminal = fcffs[-1] * (1 + g)
@@ -221,7 +217,6 @@ for w in wacc_range:
 
 sens_df = pd.DataFrame(results)
 if not sens_df.empty:
-    # Transformation de la liste plate en tableau à double entrée lisible
     matrix_sens = sens_df.pivot(index="WACC (%)", columns="Croissance g (%)", values="Prix")
     st.dataframe(matrix_sens, use_container_width=True)
 
@@ -287,3 +282,4 @@ if run_scenarios is not None:
             wacc, periods, net_debt, shares, pv_fcff_sum, fcff_terminal
         )
     except Exception as e:
+        st.error(f"Erreur lors du chargement des scénarios : {e}")
