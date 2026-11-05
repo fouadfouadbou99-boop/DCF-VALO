@@ -282,12 +282,7 @@ sens = pd.DataFrame(
     ]
 )
 
-st.dataframe(
-    sens,
-    st.dataframe(
-    bp_df.round(0),
-    use_container_width=True
-)
+st.dataframe(bp_df.round(0), use_container_width=True)
 
 st.subheader("Stress Tests")
 
