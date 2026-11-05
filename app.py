@@ -85,7 +85,7 @@ revenue0 = st.number_input("CA année 0", value=1000.0)
 rows = []
 for i in range(bp_years):
     c1,c2,c3,c4,c5 = st.columns(5)
-    rows.append({
+    rows.append({})
         c1, c2, c3, c4, c5, c6 = st.columns(6)
 
 rows.append({
