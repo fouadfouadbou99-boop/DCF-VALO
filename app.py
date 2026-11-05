@@ -28,7 +28,10 @@ with st.sidebar:
     sp = st.number_input("Prime spécifique (%)", value=1.0)/100
     cost_debt = st.number_input("Coût de la dette (%)", value=5.0)/100
     tax_rate = st.number_input("IS (%)", value=30.0)/100
-
+    tax_rex = st.number_input(
+    "IS sur REX (%)",
+    value=30.0
+) / 100
     debt_weight = st.number_input("Poids dette (%)", value=20.0)/100
 
     st.header("Valorisation")
