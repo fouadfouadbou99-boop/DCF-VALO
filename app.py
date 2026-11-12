@@ -272,13 +272,14 @@ with col_res2:
 
 st.subheader('Détail DCF')
 dcf_df = pd.DataFrame({
-    'Année': bp_df['Année'],
+    'Année': bp_explicit_df['Année'],  # <-- Remplacer bp_df par bp_explicit_df ici
     'FCFF': fcffs,
     'Période': periods,
     'Facteur': discounts,
     'PV FCFF': pv_fcff
 })
 st.dataframe(dcf_df, use_container_width=True)
+
 
 # =====================
 # SENSIBILITE (PIVOT & HEATMAP)
