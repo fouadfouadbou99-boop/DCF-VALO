@@ -274,7 +274,6 @@ col_sens1, col_sens2 = st.columns([1, 1.2])
 
 with col_sens1:
     st.subheader("Matrice des Prix par Action")
-    # Formatage conditionnel du tableau pivot
     st.dataframe(
         sens_pivot.style.format("{:.2f}", na_rep="-").background_gradient(cmap="RdYlGn", axis=None),
         use_container_width=True
@@ -299,7 +298,14 @@ with col_sens2:
 
 # =====================
 # STRESS TESTS
-
+# =====================
+st.subheader("Stress Tests")
+stress = pd.DataFrame({
+    "Scénario": ["Optimiste", "Base", "Dégradé", "Crise"],
+    "Facteur": [1.15, 1.00, 0.85, 0.70]
+})
+stress["Prix Action"] = share_price * stress["Facteur"]
+st.dataframe(stress, use_container_width=True)
 
 # =====================
 # EXPORTS (EXCEL & JSON)
@@ -307,13 +313,12 @@ with col_sens2:
 st.header("Exports")
 col_exp1, col_exp2 = st.columns(2)
 
-# Export Excel
 buf = BytesIO()
 with pd.ExcelWriter(buf, engine="openpyxl") as writer:
     bp_df.to_excel(writer, sheet_name="BusinessPlan", index=False)
     dcf_df.to_excel(writer, sheet_name="DCF", index=False)
     summary_df.to_excel(writer, sheet_name="Synthese", index=False)
-    sens.to_excel(writer, sheet_name="Sensibilite", index=False)
+    sens_pivot.to_excel(writer, sheet_name="Sensibilite_Pivot")
     stress.to_excel(writer, sheet_name="Stress", index=False)
 buf.seek(0)
 
@@ -325,7 +330,6 @@ with col_exp1:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-# Sauvegarde JSON
 save_data = {
     "company": company,
     "valuation_date": str(valuation_date),
