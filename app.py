@@ -350,13 +350,28 @@ st.dataframe(stress, use_container_width=True)
 st.header("Exports")
 col_exp1, col_exp2 = st.columns(2)
 
+# Sécurité : recrée dcf_df s'il n'a pas été défini plus haut dans le script
+if 'dcf_df' not in locals() and 'fcffs' in locals():
+    dcf_df = pd.DataFrame({
+        'Année': bp_explicit_df['Année'].values if 'bp_explicit_df' in locals() else bp_df['Année'].values[:len(fcffs)],
+        'FCFF': fcffs,
+        'Période': periods,
+        'Facteur': discounts,
+        'PV FCFF': pv_fcff
+    })
+
 buf = BytesIO()
 with pd.ExcelWriter(buf, engine="openpyxl") as writer:
-    bp_df.to_excel(writer, sheet_name="BusinessPlan", index=False)
-    dcf_df.to_excel(writer, sheet_name="DCF", index=False)
-    summary_df.to_excel(writer, sheet_name="Synthese", index=False)
-    sens_pivot.to_excel(writer, sheet_name="Sensibilite_Pivot")
-    stress.to_excel(writer, sheet_name="Stress", index=False)
+    if 'bp_df' in locals():
+        bp_df.to_excel(writer, sheet_name="BusinessPlan", index=False)
+    if 'dcf_df' in locals():
+        dcf_df.to_excel(writer, sheet_name="DCF", index=False)
+    if 'summary_df' in locals():
+        summary_df.to_excel(writer, sheet_name="Synthese", index=False)
+    if 'sens_pivot' in locals():
+        sens_pivot.to_excel(writer, sheet_name="Sensibilite_Pivot")
+    if 'stress' in locals():
+        stress.to_excel(writer, sheet_name="Stress", index=False)
 buf.seek(0)
 
 with col_exp1:
