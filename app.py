@@ -87,12 +87,13 @@ use_custom_normative = st.checkbox(
 )
 
 if use_custom_normative:
-    cn1, cn2, cn3, cn4, cn5 = st.columns(5)
-    norm_growth = cn1.number_input("Croissance Normative %", value=terminal_growth * 100, disabled=True) / 100
-    norm_ebitda_m = cn2.number_input("Marge EBITDA Norm. %", value=25.02) / 100
-    norm_da_m = cn3.number_input("Amort. Norm. %", value=2.05) / 100
-    norm_capex_m = cn4.number_input("CAPEX Norm. %", value=2.05) / 100
-    norm_bfr_m = cn5.number_input("BFR Norm. %", value=0.52) / 100
+    cn1, cn2, cn3, cn4, cn5, cn6 = st.columns(6)
+    norm_growth = cn1.number_input("Croissance Norm. %", value=terminal_growth * 100, format="%.2f") / 100
+    norm_ebitda_m = cn2.number_input("Marge EBITDA Norm. %", value=25.02, format="%.2f") / 100
+    norm_da_m = cn3.number_input("Amort. Norm. %", value=2.05, format="%.2f") / 100
+    norm_capex_m = cn4.number_input("CAPEX Norm. %", value=2.05, format="%.2f") / 100
+    norm_bfr_m = cn5.number_input("BFR Norm. %", value=0.52, format="%.2f") / 100
+    norm_tax_m = cn6.number_input("IS Norm. %", value=float(tax_rate * 100), format="%.2f") / 100
 
 revenue = revenue0
 bp = []
@@ -107,7 +108,7 @@ for i in range(bp_years):
         capex = round(rev_calc * rows[i]["CAPEX"])
         bfr = round(rev_calc * rows[i]["BFR"])
         ebit = ebitda - dep
-        tax = round(ebit * tax_rate)
+        tax = round(ebit * rows[i]["Tax"])  # Utilisation du taux annuel IS Y%
         nopat = ebit - tax
         fcff = ebitda - tax - capex - bfr
     else:
@@ -117,7 +118,7 @@ for i in range(bp_years):
         capex = rev_calc * rows[i]["CAPEX"]
         bfr = rev_calc * rows[i]["BFR"]
         ebit = ebitda - dep
-        tax = round(ebit * rows[i]["Tax"]) if fcff_method == "Excel" else (ebit * rows[i]["Tax"])
+        tax = ebit * rows[i]["Tax"]
         nopat = ebit - tax
         fcff = round(nopat + dep - capex - bfr, 0)
 
@@ -135,23 +136,23 @@ for i in range(bp_years):
 
 if use_custom_normative:
     if fcff_method == "Excel":
-        rev_norm = round(round(revenue) * (1 + terminal_growth))
+        rev_norm = round(round(revenue) * (1 + norm_growth))
         ebitda_norm = round(rev_norm * norm_ebitda_m)
         dep_norm = round(rev_norm * norm_da_m)
         capex_norm = round(rev_norm * norm_capex_m)
         bfr_norm = round(rev_norm * norm_bfr_m)
         ebit_norm = ebitda_norm - dep_norm
-        tax_norm = round(ebit_norm * tax_rate)
+        tax_norm = round(ebit_norm * norm_tax_m)  # Utilisation du taux IS Norm. %
         nopat_norm = ebit_norm - tax_norm
         fcff_terminal = ebitda_norm - tax_norm - capex_norm - bfr_norm
     else:
-        rev_norm = revenue * (1 + terminal_growth)
+        rev_norm = revenue * (1 + norm_growth)
         ebitda_norm = rev_norm * norm_ebitda_m
         dep_norm = rev_norm * norm_da_m
         capex_norm = rev_norm * norm_capex_m
         bfr_norm = rev_norm * norm_bfr_m
         ebit_norm = ebitda_norm - dep_norm
-        tax_norm = ebit_norm * tax_rate
+        tax_norm = ebit_norm * norm_tax_m
         nopat_norm = ebit_norm - tax_norm
         fcff_terminal = round(nopat_norm + dep_norm - capex_norm - bfr_norm, 0)
         
