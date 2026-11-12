@@ -78,7 +78,7 @@ for i in range(bp_years):
 
 st.subheader("Hypothèses Année Normative (Valeur Terminale)")
 use_custom_normative = st.checkbox(
-    "Activer le calcul détaillé du flux normatif (recommandé pour alignement rapport)",
+    "Activer le calcul détaillé du flux normatif (alignement rapport)",
     value=True
 )
 
@@ -95,26 +95,26 @@ bp = []
 
 for i in range(bp_years):
     revenue = revenue * (1 + rows[i]["Growth"])
-    rev_calc = round(revenue) if fcff_method == "Excel" else revenue
     
-    ebitda = rev_calc * rows[i]["EBITDA"]
-    dep = rev_calc * rows[i]["D&A"]
-    capex = rev_calc * rows[i]["CAPEX"]
-    bfr = rev_calc * rows[i]["BFR"]
-
     if fcff_method == "Excel":
-        ebitda = round(ebitda)
-        dep = round(dep)
-        capex = round(capex)
-        bfr = round(bfr)
-
-    ebit = ebitda - dep
-    tax = round(ebit * tax_rate) if fcff_method == "Excel" else (ebit * tax_rate)
-    nopat = ebit - tax
-
-    if fcff_method == "Excel":
+        rev_calc = round(revenue)
+        ebitda = round(rev_calc * rows[i]["EBITDA"])
+        dep = round(rev_calc * rows[i]["D&A"])
+        capex = round(rev_calc * rows[i]["CAPEX"])
+        bfr = round(rev_calc * rows[i]["BFR"])
+        ebit = ebitda - dep
+        tax = round(ebit * tax_rate)
+        nopat = ebit - tax
         fcff = ebitda - tax - capex - bfr
     else:
+        rev_calc = revenue
+        ebitda = rev_calc * rows[i]["EBITDA"]
+        dep = rev_calc * rows[i]["D&A"]
+        capex = rev_calc * rows[i]["CAPEX"]
+        bfr = rev_calc * rows[i]["BFR"]
+        ebit = ebitda - dep
+        tax = ebit * tax_rate
+        nopat = ebit - tax
         fcff = round(nopat + dep - capex - bfr, 0)
 
     bp.append([
@@ -130,19 +130,25 @@ for i in range(bp_years):
     ])
 
 if use_custom_normative:
-    rev_norm = round(revenue * (1 + terminal_growth)) if fcff_method == "Excel" else revenue * (1 + terminal_growth)
-    ebitda_norm = round(rev_norm * norm_ebitda_m) if fcff_method == "Excel" else rev_norm * norm_ebitda_m
-    dep_norm = round(rev_norm * norm_da_m) if fcff_method == "Excel" else rev_norm * norm_da_m
-    capex_norm = round(rev_norm * norm_capex_m) if fcff_method == "Excel" else rev_norm * norm_capex_m
-    bfr_norm = round(rev_norm * norm_bfr_m) if fcff_method == "Excel" else rev_norm * norm_bfr_m
-    
-    ebit_norm = ebitda_norm - dep_norm
-    tax_norm = round(ebit_norm * tax_rate) if fcff_method == "Excel" else ebit_norm * tax_rate
-    nopat_norm = ebit_norm - tax_norm
-    
     if fcff_method == "Excel":
+        rev_norm = round(round(revenue) * (1 + terminal_growth))
+        ebitda_norm = round(rev_norm * norm_ebitda_m)
+        dep_norm = round(rev_norm * norm_da_m)
+        capex_norm = round(rev_norm * norm_capex_m)
+        bfr_norm = round(rev_norm * norm_bfr_m)
+        ebit_norm = ebitda_norm - dep_norm
+        tax_norm = round(ebit_norm * tax_rate)
+        nopat_norm = ebit_norm - tax_norm
         fcff_terminal = ebitda_norm - tax_norm - capex_norm - bfr_norm
     else:
+        rev_norm = revenue * (1 + terminal_growth)
+        ebitda_norm = rev_norm * norm_ebitda_m
+        dep_norm = rev_norm * norm_da_m
+        capex_norm = rev_norm * norm_capex_m
+        bfr_norm = rev_norm * norm_bfr_m
+        ebit_norm = ebitda_norm - dep_norm
+        tax_norm = ebit_norm * tax_rate
+        nopat_norm = ebit_norm - tax_norm
         fcff_terminal = round(nopat_norm + dep_norm - capex_norm - bfr_norm, 0)
         
     bp.append([
@@ -172,7 +178,6 @@ bp_df = pd.DataFrame(
     ]
 )
 
-# Séparation des années explicites du BP (hors ligne Normatif)
 bp_explicit_df = bp_df[bp_df['Année'] != 'Normatif'].copy()
 
 col_bp1, col_bp2 = st.columns([1.4, 1])
@@ -212,18 +217,27 @@ else:
 discounts = 1 / ((1 + wacc) ** periods)
 
 fcffs = bp_explicit_df['FCFF'].values
-pv_fcff = fcffs * discounts
-pv_fcff_sum = pv_fcff.sum()
 
 if not use_custom_normative:
     fcff_terminal = fcffs[-1] * (1 + terminal_growth)
 
-tv = fcff_terminal / (wacc - terminal_growth) if wacc > terminal_growth else 0
-pv_tv = tv * discounts[-1]
-
-enterprise_value = pv_fcff_sum + pv_tv
-equity_value = enterprise_value - net_debt - minorities
-share_price = equity_value / shares if shares > 0 else 0
+if fcff_method == "Excel":
+    # Alignement sur l'arrondi ligne par ligne des flux actualisés du rapport
+    pv_fcff = np.round(fcffs * discounts)
+    pv_fcff_sum = pv_fcff.sum()
+    tv = round(fcff_terminal / (wacc - terminal_growth)) if wacc > terminal_growth else 0
+    pv_tv = round(tv * discounts[-1])
+    enterprise_value = pv_fcff_sum + pv_tv
+    equity_value = enterprise_value - net_debt - minorities
+    share_price = round(equity_value / shares) if shares > 0 else 0
+else:
+    pv_fcff = fcffs * discounts
+    pv_fcff_sum = pv_fcff.sum()
+    tv = fcff_terminal / (wacc - terminal_growth) if wacc > terminal_growth else 0
+    pv_tv = tv * discounts[-1]
+    enterprise_value = pv_fcff_sum + pv_tv
+    equity_value = enterprise_value - net_debt - minorities
+    share_price = equity_value / shares if shares > 0 else 0
 
 # =====================
 # RESULTATS & SYNTHESE
