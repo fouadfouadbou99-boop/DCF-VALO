@@ -378,4 +378,4 @@ else:
     if valuation_date > year_end:
 
         year_end = date()
-            valuation
+        valuation
