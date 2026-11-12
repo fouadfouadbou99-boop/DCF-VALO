@@ -117,7 +117,7 @@ for i in range(bp_years):
         capex = rev_calc * rows[i]["CAPEX"]
         bfr = rev_calc * rows[i]["BFR"]
         ebit = ebitda - dep
-       tax = round(ebit * rows[i]["Tax"]) if fcff_method == "Excel" else (ebit * rows[i]["Tax"])
+        tax = round(ebit * rows[i]["Tax"]) if fcff_method == "Excel" else (ebit * rows[i]["Tax"])
         nopat = ebit - tax
         fcff = round(nopat + dep - capex - bfr, 0)
 
