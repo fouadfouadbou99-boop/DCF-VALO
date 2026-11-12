@@ -34,8 +34,20 @@ with st.sidebar:
 
     st.header("Valorisation")
     terminal_growth = st.number_input("Croissance terminale (%)", value=2.0)/100
-    net_debt = st.number_input("Dette nette", value=100.0)
-    shares = st.number_input("Nb actions (millions)", value=10.0)
+    net_debt = st.number_input(
+    "Dette nette",
+    value=100.0
+)
+
+minorities = st.number_input(
+    "Intérêts minoritaires",
+    value=0.0
+)
+
+shares = st.number_input(
+    "Nb actions (millions)",
+    value=10.0
+)
 
     discount_mode = st.selectbox(
         "Méthode d'actualisation",
