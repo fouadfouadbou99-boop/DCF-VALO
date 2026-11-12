@@ -41,16 +41,28 @@ with st.sidebar:
         "Méthode d'actualisation",
         ["Année pleine", "Mid-Year", "Durée résiduelle"]
     )
+discount_mode = st.selectbox(
+    "Méthode d'actualisation",
+    ["Année pleine", "Mid-Year", "Durée résiduelle"]
+)
+
+fcff_method = st.selectbox(
+    "Méthode FCFF",
+    [
+        "Excel",
+        "DCF Standard"
+    ]
+)
+
 # =====================
 # WACC
 # =====================
 
-debt_weight = debt_weight
 equity_weight = 1 - debt_weight
 
 cost_equity = rf + beta * mrp + sp
 
-# coût de la dette déjà après impôt
+# coût de la dette déjà après IS
 cost_debt_after_tax = cost_debt
 
 wacc = (
@@ -62,11 +74,19 @@ st.sidebar.markdown("---")
 st.sidebar.write(
     f"**Coût des fonds propres : {cost_equity*100:.2f}%**"
 )
+
 st.sidebar.write(
     f"**Coût de la dette après IS : {cost_debt_after_tax*100:.2f}%**"
 )
+
 st.sidebar.write(
     f"**WACC : {wacc*100:.2f}%**"
+)
+
+first_bp_year = st.number_input(
+    "Première année du BP",
+    value=2026,
+    step=1
 )
 # =====================
 # BUSINESS PLAN
