@@ -67,14 +67,18 @@ revenue0 = st.number_input("CA année 0", value=2831.0)
 
 rows = []
 for i in range(bp_years):
-    c1, c2, c3, c4, c5 = st.columns(5)
+    # Passage à 6 colonnes pour inclure le taux d'IS annuel
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
     rows.append({
         'Growth': c1.number_input(f'Croissance Y{i+1} %', value=5.0, key=f'g{i}') / 100,
         'EBITDA': c2.number_input(f'Marge EBITDA Y{i+1} %', value=25.0, key=f'e{i}') / 100,
         'D&A': c3.number_input(f'Amort. Y{i+1} %', value=4.10, key=f'd{i}') / 100,
         'CAPEX': c4.number_input(f'CAPEX Y{i+1} %', value=3.0, key=f'c{i}') / 100,
         'BFR': c5.number_input(f'BFR Y{i+1} %', value=1.5, key=f'b{i}') / 100,
+        # Pré-rempli automatiquement avec le taux de la barre latérale
+        'Tax': c6.number_input(f'IS Y{i+1} %', value=float(tax_rate * 100), key=f't{i}') / 100,
     })
+
 
 st.subheader("Hypothèses Année Normative (Valeur Terminale)")
 use_custom_normative = st.checkbox(
@@ -113,7 +117,7 @@ for i in range(bp_years):
         capex = rev_calc * rows[i]["CAPEX"]
         bfr = rev_calc * rows[i]["BFR"]
         ebit = ebitda - dep
-        tax = ebit * tax_rate
+       tax = round(ebit * rows[i]["Tax"]) if fcff_method == "Excel" else (ebit * rows[i]["Tax"])
         nopat = ebit - tax
         fcff = round(nopat + dep - capex - bfr, 0)
 
