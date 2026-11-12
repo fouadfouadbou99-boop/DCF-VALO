@@ -60,10 +60,10 @@ st.sidebar.write(f"**Coût de la dette après IS : {cost_debt_after_tax*100:.2f}
 st.sidebar.write(f"**WACC : {wacc*100:.2f}%**")
 
 # =====================
-# BUSINESS PLAN
+# BUSINESS PLAN & ANNEE NORMATIVE
 # =====================
 st.header("Business Plan")
-revenue0 = st.number_input("CA année 0", value=1000.0)
+revenue0 = st.number_input("CA année 0", value=2831.0)
 
 rows = []
 for i in range(bp_years):
@@ -71,38 +71,53 @@ for i in range(bp_years):
     rows.append({
         'Growth': c1.number_input(f'Croissance Y{i+1} %', value=5.0, key=f'g{i}') / 100,
         'EBITDA': c2.number_input(f'Marge EBITDA Y{i+1} %', value=25.0, key=f'e{i}') / 100,
-        'D&A': c3.number_input(f'Amort. Y{i+1} %', value=3.0, key=f'd{i}') / 100,
-        'CAPEX': c4.number_input(f'CAPEX Y{i+1} %', value=5.0, key=f'c{i}') / 100,
-        'BFR': c5.number_input(f'BFR Y{i+1} %', value=2.0, key=f'b{i}') / 100,
+        'D&A': c3.number_input(f'Amort. Y{i+1} %', value=4.10, key=f'd{i}') / 100,
+        'CAPEX': c4.number_input(f'CAPEX Y{i+1} %', value=3.0, key=f'c{i}') / 100,
+        'BFR': c5.number_input(f'BFR Y{i+1} %', value=1.5, key=f'b{i}') / 100,
     })
+
+# Ajout de la ligne pour l'Année Normative (Valeur Terminale)
+st.subheader("Hypothèses Année Normative (Valeur Terminale)")
+use_custom_normative = st.checkbox("Activer le calcul détaillé du flux normatif (recommandé pour alignement rapport)", value=True)
+
+if use_custom_normative:
+    cn1, cn2, cn3, cn4, cn5 = st.columns(5)
+    norm_growth = cn1.number_input("Croissance Normative %", value=terminal_growth * 100, disabled=True) / 100
+    norm_ebitda_m = cn2.number_input("Marge EBITDA Norm. %", value=25.02) / 100
+    norm_da_m = cn3.number_input("Amort. Norm. %", value=2.05) / 100
+    norm_capex_m = cn4.number_input("CAPEX Norm. %", value=2.05) / 100
+    norm_bfr_m = cn5.number_input("BFR Norm. %", value=0.52) / 100
 
 revenue = revenue0
 bp = []
 
 for i in range(bp_years):
     revenue = revenue * (1 + rows[i]["Growth"])
+    rev_calc = round(revenue) if fcff_method == "Excel" else revenue
     
-    ebitda = revenue * rows[i]["EBITDA"]
-    dep = revenue * rows[i]["D&A"]
-    capex = revenue * rows[i]["CAPEX"]
-    bfr = revenue * rows[i]["BFR"]
+    ebitda = rev_calc * rows[i]["EBITDA"]
+    dep = rev_calc * rows[i]["D&A"]
+    capex = rev_calc * rows[i]["CAPEX"]
+    bfr = rev_calc * rows[i]["BFR"]
+
+    if fcff_method == "Excel":
+        ebitda = round(ebitda)
+        dep = round(dep)
+        capex = round(capex)
+        bfr = round(bfr)
 
     ebit = ebitda - dep
-    tax = ebit * tax_rate
+    tax = round(ebit * tax_rate) if fcff_method == "Excel" else (ebit * tax_rate)
     nopat = ebit - tax
 
     if fcff_method == "Excel":
-        ebitda_r = round(ebitda)
-        tax_r = round(tax)
-        capex_r = round(capex)
-        bfr_r = round(bfr)
-        fcff = ebitda_r - tax_r - capex_r - bfr_r
+        fcff = ebitda - tax - capex - bfr
     else:
         fcff = round(nopat + dep - capex - bfr, 0)
 
     bp.append([
-        first_bp_year + i,
-        revenue,
+        str(first_bp_year + i),
+        rev_calc,
         ebitda,
         dep,
         ebit,
@@ -110,6 +125,36 @@ for i in range(bp_years):
         capex,
         bfr,
         fcff
+    ])
+
+# Calcul du flux normatif
+if use_custom_normative:
+    rev_norm = round(revenue * (1 + terminal_growth)) if fcff_method == "Excel" else revenue * (1 + terminal_growth)
+    ebitda_norm = round(rev_norm * norm_ebitda_m) if fcff_method == "Excel" else rev_norm * norm_ebitda_m
+    dep_norm = round(rev_norm * norm_da_m) if fcff_method == "Excel" else rev_norm * norm_da_m
+    capex_norm = round(rev_norm * norm_capex_m) if fcff_method == "Excel" else rev_norm * norm_capex_m
+    bfr_norm = round(rev_norm * norm_bfr_m) if fcff_method == "Excel" else rev_norm * norm_bfr_m
+    
+    ebit_norm = ebitda_norm - dep_norm
+    tax_norm = round(ebit_norm * tax_rate) if fcff_method == "Excel" else ebit_norm * tax_rate
+    nopat_norm = ebit_norm - tax_norm
+    
+    if fcff_method == "Excel":
+        fcff_terminal = ebitda_norm - tax_norm - capex_norm - bfr_norm
+    else:
+        fcff_terminal = round(nopat_norm + dep_norm - capex_norm - bfr_norm, 0)
+        
+    # Ajout de la ligne Normatif au tableau d'affichage
+    bp.append([
+        "Normatif",
+        rev_norm,
+        ebitda_norm,
+        dep_norm,
+        ebit_norm,
+        nopat_norm,
+        capex_norm,
+        bfr_norm,
+        fcff_terminal
     ])
 
 bp_df = pd.DataFrame(
@@ -127,25 +172,6 @@ bp_df = pd.DataFrame(
     ]
 )
 
-col_bp1, col_bp2 = st.columns([1.4, 1])
-
-with col_bp1:
-    st.dataframe(bp_df, use_container_width=True)
-
-with col_bp2:
-    # Graphique d'évolution du Business Plan
-    fig_bp = go.Figure()
-    fig_bp.add_trace(go.Bar(x=bp_df["Année"], y=bp_df["CA"], name="CA", marker_color="#1f77b4"))
-    fig_bp.add_trace(go.Bar(x=bp_df["Année"], y=bp_df["EBITDA"], name="EBITDA", marker_color="#2ca02c"))
-    fig_bp.add_trace(go.Scatter(x=bp_df["Année"], y=bp_df["FCFF"], name="FCFF", mode="lines+markers", line=dict(color="#ff7f0e", width=3)))
-    fig_bp.update_layout(
-        title="Trajectoire Financière (CA, EBITDA & FCFF)",
-        barmode="group",
-        height=350,
-        margin=dict(l=20, r=20, t=40, b=20),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-    )
-    st.plotly_chart(fig_bp, use_container_width=True)
 
 # =====================
 # ACTUALISATION (DCF)
@@ -164,16 +190,24 @@ else:
 
 discounts = 1 / ((1 + wacc) ** periods)
 
-fcffs = bp_df['FCFF'].values
+# On ne prend que les années explicites du BP (hors ligne "Normatif")
+bp_explicit_df = bp_df[bp_df['Année'] != 'Normatif']
+fcffs = bp_explicit_df['FCFF'].values
+
 pv_fcff = fcffs * discounts
 pv_fcff_sum = pv_fcff.sum()
 
-fcff_terminal = fcffs[-1] * (1 + terminal_growth)
+# Si l'année normative détaillée n'est pas activée, on garde l'ancien calcul
+if not use_custom_normative:
+    fcff_terminal = fcffs[-1] * (1 + terminal_growth)
+
 tv = fcff_terminal / (wacc - terminal_growth) if wacc > terminal_growth else 0
 pv_tv = tv * discounts[-1]
 
 enterprise_value = pv_fcff_sum + pv_tv
 equity_value = enterprise_value - net_debt - minorities
+share_price = equity_value / shares if shares > 0 else 0
+
 share_price = equity_value / shares if shares > 0 else 0
 
 # =====================
