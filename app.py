@@ -271,7 +271,7 @@ with col_res2:
     st.plotly_chart(fig_waterfall, use_container_width=True)
 
 st.subheader('Détail DCF')
-dcf_df = pd.DataFrame({
+    dcf_df = pd.DataFrame({
     'Année': bp_explicit_df['Année'],  # <-- Remplacer bp_df par bp_explicit_df ici
     'FCFF': fcffs,
     'Période': periods,
