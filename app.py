@@ -19,7 +19,7 @@ with st.sidebar:
     valuation_date = st.date_input("Date de valorisation", date.today())
     closing_month = st.selectbox("Mois de clôture", list(range(1, 13)), index=11)
     bp_years = st.slider("Durée du Business Plan", 3, 10, 5)
-    first_bp_year = st.number_input("Première année du BP", value=2026, step=1)
+    first_bp_year = st.number_input("Première année du BP", value=2027, step=1)
 
     st.header("WACC")
     rf = st.number_input("Taux sans risque (%)", value=3.0) / 100
@@ -32,9 +32,9 @@ with st.sidebar:
 
     st.header("Valorisation")
     terminal_growth = st.number_input("Croissance terminale (%)", value=2.0) / 100
-    net_debt = st.number_input("Dette nette", value=100.0)
-    minorities = st.number_input("Intérêts minoritaires", value=0.0)
-    shares = st.number_input("Nb actions (millions)", value=10.0)
+    net_debt = st.number_input("Dette nette", value=1461.0)
+    minorities = st.number_input("Intérêts minoritaires", value=275.0)
+    shares = st.number_input("Nb actions (millions)", value=13.21)
 
     discount_mode = st.selectbox(
         "Méthode d'actualisation",
@@ -76,9 +76,11 @@ for i in range(bp_years):
         'BFR': c5.number_input(f'BFR Y{i+1} %', value=1.5, key=f'b{i}') / 100,
     })
 
-# Ajout de la ligne pour l'Année Normative (Valeur Terminale)
 st.subheader("Hypothèses Année Normative (Valeur Terminale)")
-use_custom_normative = st.checkbox("Activer le calcul détaillé du flux normatif (recommandé pour alignement rapport)", value=True)
+use_custom_normative = st.checkbox(
+    "Activer le calcul détaillé du flux normatif (recommandé pour alignement rapport)",
+    value=True
+)
 
 if use_custom_normative:
     cn1, cn2, cn3, cn4, cn5 = st.columns(5)
@@ -127,7 +129,6 @@ for i in range(bp_years):
         fcff
     ])
 
-# Calcul du flux normatif
 if use_custom_normative:
     rev_norm = round(revenue * (1 + terminal_growth)) if fcff_method == "Excel" else revenue * (1 + terminal_growth)
     ebitda_norm = round(rev_norm * norm_ebitda_m) if fcff_method == "Excel" else rev_norm * norm_ebitda_m
@@ -144,7 +145,6 @@ if use_custom_normative:
     else:
         fcff_terminal = round(nopat_norm + dep_norm - capex_norm - bfr_norm, 0)
         
-    # Ajout de la ligne Normatif au tableau d'affichage
     bp.append([
         "Normatif",
         rev_norm,
@@ -172,6 +172,27 @@ bp_df = pd.DataFrame(
     ]
 )
 
+# Séparation des années explicites du BP (hors ligne Normatif)
+bp_explicit_df = bp_df[bp_df['Année'] != 'Normatif'].copy()
+
+col_bp1, col_bp2 = st.columns([1.4, 1])
+
+with col_bp1:
+    st.dataframe(bp_df, use_container_width=True)
+
+with col_bp2:
+    fig_bp = go.Figure()
+    fig_bp.add_trace(go.Bar(x=bp_explicit_df["Année"], y=bp_explicit_df["CA"], name="CA", marker_color="#1f77b4"))
+    fig_bp.add_trace(go.Bar(x=bp_explicit_df["Année"], y=bp_explicit_df["EBITDA"], name="EBITDA", marker_color="#2ca02c"))
+    fig_bp.add_trace(go.Scatter(x=bp_explicit_df["Année"], y=bp_explicit_df["FCFF"], name="FCFF", mode="lines+markers", line=dict(color="#ff7f0e", width=3)))
+    fig_bp.update_layout(
+        title="Trajectoire Financière (CA, EBITDA & FCFF)",
+        barmode="group",
+        height=350,
+        margin=dict(l=20, r=20, t=40, b=20),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    st.plotly_chart(fig_bp, use_container_width=True)
 
 # =====================
 # ACTUALISATION (DCF)
@@ -190,14 +211,10 @@ else:
 
 discounts = 1 / ((1 + wacc) ** periods)
 
-# On ne prend que les années explicites du BP (hors ligne "Normatif")
-bp_explicit_df = bp_df[bp_df['Année'] != 'Normatif']
 fcffs = bp_explicit_df['FCFF'].values
-
 pv_fcff = fcffs * discounts
 pv_fcff_sum = pv_fcff.sum()
 
-# Si l'année normative détaillée n'est pas activée, on garde l'ancien calcul
 if not use_custom_normative:
     fcff_terminal = fcffs[-1] * (1 + terminal_growth)
 
@@ -206,8 +223,6 @@ pv_tv = tv * discounts[-1]
 
 enterprise_value = pv_fcff_sum + pv_tv
 equity_value = enterprise_value - net_debt - minorities
-share_price = equity_value / shares if shares > 0 else 0
-
 share_price = equity_value / shares if shares > 0 else 0
 
 # =====================
@@ -248,7 +263,6 @@ with col_res1:
     st.dataframe(summary_df, use_container_width=True)
 
 with col_res2:
-    # Graphique Waterfall : Décomposition EV -> Equity Value
     fig_waterfall = go.Figure(go.Waterfall(
         name="Valorisation",
         orientation="v",
@@ -268,18 +282,6 @@ with col_res2:
         height=360,
         margin=dict(l=20, r=20, t=40, b=20)
     )
-    st.plotly_chart(fig_waterfall, use_container_width=True)
-
-st.subheader('Détail DCF')
-    dcf_df = pd.DataFrame({
-    'Année': bp_explicit_df['Année'],  # <-- Remplacer bp_df par bp_explicit_df ici
-    'FCFF': fcffs,
-    'Période': periods,
-    'Facteur': discounts,
-    'PV FCFF': pv_fcff
-})
-st.dataframe(dcf_df, use_container_width=True)
-
 
 # =====================
 # SENSIBILITE (PIVOT & HEATMAP)
