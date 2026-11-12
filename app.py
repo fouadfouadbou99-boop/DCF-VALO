@@ -200,7 +200,11 @@ tv = fcff_terminal/(wacc-terminal_growth) if wacc>terminal_growth else 0
 pv_tv = tv*discounts[-1]
 
 enterprise_value = pv_fcff_sum + pv_tv
-equity_value = enterprise_value - net_debt
+equity_value = (
+    enterprise_value
+    - net_debt
+    - minorities
+)
 share_price = equity_value / shares if shares>0 else 0
 
 # =====================
