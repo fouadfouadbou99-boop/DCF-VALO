@@ -7,9 +7,6 @@ from datetime import date
 from io import BytesIO
 import json
 
-# Si vous utilisez ce module plus bas, décommentez la ligne suivante :
-# from scenario_module import run_scenarios
-
 st.set_page_config(page_title="Corporate Valuation Platform", layout="wide")
 st.title("Corporate Valuation Platform")
 
@@ -54,7 +51,7 @@ with st.sidebar:
 # =====================
 equity_weight = 1 - debt_weight
 cost_equity = rf + beta * mrp + sp
-cost_debt_after_tax = cost_debt  # Coût de la dette déjà après IS
+cost_debt_after_tax = cost_debt
 wacc = (equity_weight * cost_equity) + (debt_weight * cost_debt_after_tax)
 
 st.sidebar.markdown("---")
@@ -83,7 +80,6 @@ revenue = revenue0
 bp = []
 
 for i in range(bp_years):
-    # Mise à jour du chiffre d'affaires avec la croissance annuelle
     revenue = revenue * (1 + rows[i]["Growth"])
     
     ebitda = revenue * rows[i]["EBITDA"]
@@ -131,7 +127,25 @@ bp_df = pd.DataFrame(
     ]
 )
 
-st.dataframe(bp_df, use_container_width=True)
+col_bp1, col_bp2 = st.columns([1.4, 1])
+
+with col_bp1:
+    st.dataframe(bp_df, use_container_width=True)
+
+with col_bp2:
+    # Graphique d'évolution du Business Plan
+    fig_bp = go.Figure()
+    fig_bp.add_trace(go.Bar(x=bp_df["Année"], y=bp_df["CA"], name="CA", marker_color="#1f77b4"))
+    fig_bp.add_trace(go.Bar(x=bp_df["Année"], y=bp_df["EBITDA"], name="EBITDA", marker_color="#2ca02c"))
+    fig_bp.add_trace(go.Scatter(x=bp_df["Année"], y=bp_df["FCFF"], name="FCFF", mode="lines+markers", line=dict(color="#ff7f0e", width=3)))
+    fig_bp.update_layout(
+        title="Trajectoire Financière (CA, EBITDA & FCFF)",
+        barmode="group",
+        height=350,
+        margin=dict(l=20, r=20, t=40, b=20),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    st.plotly_chart(fig_bp, use_container_width=True)
 
 # =====================
 # ACTUALISATION (DCF)
@@ -172,29 +186,55 @@ col2.metric('Equity Value', f'{equity_value:,.0f}')
 col3.metric('Prix Action', f'{share_price:,.2f}')
 col4.metric('WACC', f'{wacc*100:.2f}%')
 
-summary_df = pd.DataFrame({
-    "Indicateur": [
-        "Somme FCFF Actualisés",
-        "Valeur Terminale",
-        "VT Actualisée",
-        "Valeur d'Entreprise",
-        "Dette Nette",
-        "Intérêts Minoritaires",
-        "Valeur des Fonds Propres",
-        "Valeur par Action"
-    ],
-    "Valeur": [
-        pv_fcff_sum,
-        tv,
-        pv_tv,
-        enterprise_value,
-        net_debt,
-        minorities,
-        equity_value,
-        share_price
-    ]
-})
-st.dataframe(summary_df, use_container_width=True)
+col_res1, col_res2 = st.columns([1, 1.3])
+
+with col_res1:
+    summary_df = pd.DataFrame({
+        "Indicateur": [
+            "Somme FCFF Actualisés",
+            "Valeur Terminale",
+            "VT Actualisée",
+            "Valeur d'Entreprise",
+            "Dette Nette",
+            "Intérêts Minoritaires",
+            "Valeur des Fonds Propres",
+            "Valeur par Action"
+        ],
+        "Valeur": [
+            pv_fcff_sum,
+            tv,
+            pv_tv,
+            enterprise_value,
+            net_debt,
+            minorities,
+            equity_value,
+            share_price
+        ]
+    })
+    st.dataframe(summary_df, use_container_width=True)
+
+with col_res2:
+    # Graphique Waterfall : Décomposition EV -> Equity Value
+    fig_waterfall = go.Figure(go.Waterfall(
+        name="Valorisation",
+        orientation="v",
+        measure=["relative", "relative", "total", "relative", "relative", "total"],
+        x=["PV des FCFF", "PV Valeur Terminale", "Enterprise Value", "Dette Nette", "Minoritaires", "Equity Value"],
+        textposition="outside",
+        text=[f"{pv_fcff_sum:,.0f}", f"{pv_tv:,.0f}", f"{enterprise_value:,.0f}", f"{-net_debt:,.0f}", f"{-minorities:,.0f}", f"{equity_value:,.0f}"],
+        y=[pv_fcff_sum, pv_tv, 0, -net_debt, -minorities, 0],
+        connector={"line": {"color": "rgb(63, 63, 63)"}},
+        increasing={"marker": {"color": "#2ca02c"}},
+        decreasing={"marker": {"color": "#d62728"}},
+        totals={"marker": {"color": "#1f77b4"}}
+    ))
+    fig_waterfall.update_layout(
+        title="Pont de Valorisation (Enterprise Value vers Equity Value)",
+        showlegend=False,
+        height=360,
+        margin=dict(l=20, r=20, t=40, b=20)
+    )
+    st.plotly_chart(fig_waterfall, use_container_width=True)
 
 st.subheader('Détail DCF')
 dcf_df = pd.DataFrame({
@@ -207,32 +247,59 @@ dcf_df = pd.DataFrame({
 st.dataframe(dcf_df, use_container_width=True)
 
 # =====================
-# SENSIBILITE
+# SENSIBILITE (PIVOT & HEATMAP)
 # =====================
-st.subheader("Sensibilité (Prix par Action)")
+st.header("Analyse de Sensibilité : WACC vs Croissance Terminale (g)")
 results = []
 
-for w in np.arange(max(0.05, wacc - 0.02), wacc + 0.021, 0.005):
-    for g in np.arange(0.01, 0.05, 0.005):
+w_range = np.arange(max(0.05, wacc - 0.02), wacc + 0.021, 0.005)
+g_range = np.arange(0.01, 0.046, 0.005)
+
+for w in w_range:
+    for g in g_range:
         if w > g:
             tev = pv_fcff_sum + ((fcff_terminal / (w - g)) * discounts[-1])
             eq = tev - net_debt - minorities
-            px = eq / shares if shares > 0 else 0
-            results.append([round(w * 100, 2), round(g * 100, 2), round(px, 2)])
+            px_val = eq / shares if shares > 0 else 0
+            results.append([round(w * 100, 2), round(g * 100, 2), round(px_val, 2)])
+        else:
+            results.append([round(w * 100, 2), round(g * 100, 2), np.nan])
 
 sens = pd.DataFrame(results, columns=["WACC (%)", "g (%)", "Prix"])
-st.dataframe(sens, use_container_width=True)
+
+# Création du tableau croisé dynamique (Pivot)
+sens_pivot = sens.pivot(index="WACC (%)", columns="g (%)", values="Prix")
+
+col_sens1, col_sens2 = st.columns([1, 1.2])
+
+with col_sens1:
+    st.subheader("Matrice des Prix par Action")
+    # Formatage conditionnel du tableau pivot
+    st.dataframe(
+        sens_pivot.style.format("{:.2f}", na_rep="-").background_gradient(cmap="RdYlGn", axis=None),
+        use_container_width=True
+    )
+
+with col_sens2:
+    st.subheader("Heatmap WACC vs Croissance (g)")
+    fig_heatmap = px.imshow(
+        sens_pivot,
+        labels=dict(x="Croissance Terminale g (%)", y="WACC (%)", color="Prix Action"),
+        x=[f"{col:.2f}%" for col in sens_pivot.columns],
+        y=[f"{idx:.2f}%" for idx in sens_pivot.index],
+        text_auto=".2f",
+        color_continuous_scale="RdYlGn",
+        aspect="auto"
+    )
+    fig_heatmap.update_layout(
+        height=380,
+        margin=dict(l=20, r=20, t=30, b=20)
+    )
+    st.plotly_chart(fig_heatmap, use_container_width=True)
 
 # =====================
 # STRESS TESTS
-# =====================
-st.subheader("Stress Tests")
-stress = pd.DataFrame({
-    "Scénario": ["Optimiste", "Base", "Dégradé", "Crise"],
-    "Facteur": [1.15, 1.00, 0.85, 0.70]
-})
-stress["Prix Action"] = share_price * stress["Facteur"]
-st.dataframe(stress, use_container_width=True)
+
 
 # =====================
 # EXPORTS (EXCEL & JSON)
